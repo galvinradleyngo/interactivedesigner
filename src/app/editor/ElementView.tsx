@@ -8,11 +8,14 @@ interface Props {
   doc: ProjectDoc;
   /** Text elements: let the user type directly into the element. */
   editText?: boolean;
+  /** Editor-only: show the alternate side of two-sided blocks. */
+  peek?: boolean;
   onTextCommit?(html: string): void;
 }
 
 /** Renders a block with the real player code, in a static "editing" mode. */
-export function ElementView({ el, doc, editText, onTextCommit }: Props) {
+export function ElementView({ el: source, doc, editText, peek, onTextCommit }: Props) {
+  const el = peek ? { ...source, props: { ...source.props, _peek: true } } : source;
   const ref = useRef<HTMLDivElement>(null);
   const commit = useRef(onTextCommit);
   commit.current = onTextCommit;
@@ -26,6 +29,7 @@ export function ElementView({ el, doc, editText, onTextCommit }: Props) {
     doc.design.radius,
     mediaKey,
     !!editText,
+    !!peek,
   ]);
 
   useEffect(() => {

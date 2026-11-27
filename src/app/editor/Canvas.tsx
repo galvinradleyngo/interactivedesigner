@@ -1,8 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { DEFS_BY_TYPE } from '../../plugins/defs';
 import {
-  STAGE_H,
   STAGE_W,
+  stageHeight,
   type Page,
   type ProjectDoc,
   type StageElement,
@@ -29,17 +29,20 @@ interface Props {
   setSub(id: string | null): void;
   editingText: string | null;
   setEditingText(id: string | null): void;
+  /** Elements currently showing their alternate side (editor-only). */
+  peek?: Record<string, boolean>;
 }
 
-const pct = (r: Rect) => ({
+const pct = (r: Rect, H: number) => ({
   left: `${(r.x / STAGE_W) * 100}%`,
-  top: `${(r.y / STAGE_H) * 100}%`,
+  top: `${(r.y / H) * 100}%`,
   width: `${(r.w / STAGE_W) * 100}%`,
-  height: `${(r.h / STAGE_H) * 100}%`,
+  height: `${(r.h / H) * 100}%`,
 });
 
 export function Canvas(p: Props) {
   const { doc, page, selectedId } = p;
+  const H = stageHeight(doc.design);
   const wrapRef = useRef<HTMLDivElement>(null);
   const stageRef = useRef<HTMLDivElement>(null);
   const overlayBox = useRef<HTMLDivElement>(null);
@@ -50,14 +53,12 @@ export function Canvas(p: Props) {
     const w = wrapRef.current;
     if (!w) return;
     const measure = () =>
-      setFit(
-        Math.max(280, Math.min(w.clientWidth - 48, (w.clientHeight - 48) * (STAGE_W / STAGE_H))),
-      );
+      setFit(Math.max(280, Math.min(w.clientWidth - 48, (w.clientHeight - 48) * (STAGE_W / H))));
     measure();
     const ro = new ResizeObserver(measure);
     ro.observe(w);
     return () => ro.disconnect();
-  }, []);
+  }, [H]);
 
   const resolve = useMemo(() => makeMediaResolver(doc), [doc]);
   const bgImg =
@@ -80,7 +81,7 @@ export function Canvas(p: Props) {
   const snap = (self: StageElement) => (r: Rect, mode: 'move' | Handle, unitsPerPx: number) => {
     if (!p.snapOn) return { rect: r, guides: { x: [], y: [] } };
     const others = visible.filter((e) => e.id !== self.id);
-    return snapRect(r, mode, snapTargets(others, STAGE_W, STAGE_H), 8 * unitsPerPx);
+    return snapRect(r, mode, snapTargets(others, STAGE_W, H), 8 * unitsPerPx);
   };
 
   const startDrag = (e: React.PointerEvent, el: StageElement, mode: 'move' | Handle) => {
@@ -91,7 +92,7 @@ export function Canvas(p: Props) {
       event: e,
       container: stage,
       unitsW: STAGE_W,
-      unitsH: STAGE_H,
+      unitsH: H,
       mode,
       start: { x: el.x, y: el.y, w: el.w, h: el.h },
       min: { w: 16, h: 16 },
@@ -101,7 +102,7 @@ export function Canvas(p: Props) {
       clamp: (r) => ({
         ...r,
         x: Math.min(STAGE_W - 24, Math.max(24 - r.w, r.x)),
-        y: Math.min(STAGE_H - 24, Math.max(24 - r.h, r.y)),
+        y: Math.min(H - 24, Math.max(24 - r.h, r.y)),
       }),
       onChange: (r, g) => {
         setGuides(g);
@@ -137,6 +138,7 @@ export function Canvas(p: Props) {
           ref={stageRef}
           className="ap-stage ed-stage"
           style={{
+            aspectRatio: `${STAGE_W} / ${H}`,
             backgroundColor: page.background ?? doc.design.background,
             backgroundImage: bgUrl ? `url("${bgUrl}")` : undefined,
           }}
@@ -152,7 +154,7 @@ export function Canvas(p: Props) {
             <div
               key={el.id}
               className={`ap-el ed-el ${selectedId === el.id ? 'is-sel' : ''} ${el.locked ? 'is-locked' : ''} ${p.editingText === el.id ? 'is-texting' : ''}`}
-              style={pct(el)}
+              style={pct(el, H)}
               data-id={el.id}
               onPointerDown={(e) => onElDown(e, el)}
               onDoubleClick={() => onElDouble(el)}
@@ -161,6 +163,7 @@ export function Canvas(p: Props) {
                 el={el}
                 doc={doc}
                 editText={p.editingText === el.id}
+                peek={!!p.peek?.[el.id]}
                 onTextCommit={(html) => {
                   p.setEditingText(null);
                   p.change((d) => updateProps(d, page.id, el.id, { ...el.props, html }));
@@ -186,15 +189,11 @@ export function Canvas(p: Props) {
             />
           ))}
           {guides?.y.map((y) => (
-            <div
-              key={`gy${y}`}
-              className="guide guide-h"
-              style={{ top: `${(y / STAGE_H) * 100}%` }}
-            />
+            <div key={`gy${y}`} className="guide guide-h" style={{ top: `${(y / H) * 100}%` }} />
           ))}
 
           {selected && !blockEl && (
-            <div className={`ed-sel ${selected.locked ? 'locked' : ''}`} style={pct(selected)}>
+            <div className={`ed-sel ${selected.locked ? 'locked' : ''}`} style={pct(selected, H)}>
               {selected.locked && (
                 <span className="lockbadge">
                   <Icon name="lock" size={14} />
@@ -216,7 +215,7 @@ export function Canvas(p: Props) {
           )}
 
           {blockEl && Overlay && (
-            <div className="ed-ovl-wrap" style={pct(blockEl)}>
+            <div className="ed-ovl-wrap" style={pct(blockEl, H)}>
               <div className="ed-ovl-bar">
                 <span>Editing {blockDef?.label}</span>
                 <button type="button" className="primary" onClick={() => p.setEditingBlock(null)}>

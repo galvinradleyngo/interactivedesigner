@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import {
   applyPageBackground,
+  applyStageShape,
   applyTheme,
   makeMediaResolver,
   paintElement,
@@ -18,6 +19,7 @@ export function PageThumb({ doc, page }: { doc: ProjectDoc; page: Page }) {
     if (!stage) return;
     const resolve = makeMediaResolver(doc);
     applyTheme(stage, doc.design);
+    applyStageShape(stage, doc.design);
     stage.replaceChildren();
     applyPageBackground(stage, page, doc.design, resolve);
     for (const el of page.elements)

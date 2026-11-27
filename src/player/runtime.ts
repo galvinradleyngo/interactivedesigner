@@ -1,12 +1,13 @@
 import { DEFS_BY_TYPE } from '../plugins/defs';
 import { aggregate, type BlockResult } from '../plugins/scoring';
 import { migrate } from '../schema/migrate';
-import { percent, type ProjectDoc, type ScormVersion } from '../schema/types';
+import { percent, STAGE_W, stageHeight, type ProjectDoc, type ScormVersion } from '../schema/types';
 import { connect } from '../scorm/api';
 import { Reporter } from '../scorm/reporter';
 import { h } from './dom';
 import {
   applyPageBackground,
+  applyStageShape,
   applyTheme,
   makeMediaResolver,
   paintElement,
@@ -66,16 +67,27 @@ export function mount(container: HTMLElement, raw: unknown, opts: MountOptions):
   container.classList.add('ap-root');
   container.replaceChildren();
   applyTheme(container, doc.design);
+  const stageH = stageHeight(doc.design);
+  container.style.setProperty('--stage-ratio', String(STAGE_W / stageH));
+  container.dataset.shape = stageH > STAGE_W ? 'tall' : 'wide';
 
   const stage = h('div', { class: 'ap-stage' });
+  applyStageShape(stage, doc.design);
   const status = h('p', { class: 'ap-status', 'aria-live': 'polite' });
   const pageLabel = h('span', { class: 'ap-pagelabel' });
   const prev = h('button', { class: 'ap-btn ap-navbtn', type: 'button' }, 'Previous');
   const next = h('button', { class: 'ap-btn ap-navbtn', type: 'button' }, 'Next');
   const nav = h('nav', { class: 'ap-nav', 'aria-label': 'Pages' }, prev, pageLabel, next);
-  if (doc.pages.length < 2) nav.hidden = true;
+  const multiPage = doc.pages.length > 1;
   container.append(
-    h('div', { class: 'ap-shell' }, h('div', { class: 'ap-stagewrap' }, stage), nav, status),
+    h(
+      'div',
+      { class: 'ap-shell' },
+      h('p', { class: 'ap-rotate', role: 'note' }, 'For a larger view, turn your device sideways.'),
+      h('div', { class: 'ap-stagewrap' }, stage),
+      multiPage ? nav : null,
+      status,
+    ),
   );
 
   const persist = () => {
@@ -108,6 +120,7 @@ export function mount(container: HTMLElement, raw: unknown, opts: MountOptions):
   const env: StageEnv = {
     project: doc,
     editing: false,
+    hints: opts.mode === 'preview',
     resolveMedia,
     getState: (id) => blockState[id],
     setState: (id, s) => {

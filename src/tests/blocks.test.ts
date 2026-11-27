@@ -116,6 +116,34 @@ describe('project aggregate', () => {
   });
 });
 
+describe('ungraded', () => {
+  const graded = (flag?: boolean) => {
+    const p = withEls(
+      el('h', 'hotspots', { ...hs(), points: 10 }),
+      el('d', 'dragDrop', { ...dd(), points: 10, graded: false }),
+    );
+    p.settings = { ...p.settings, graded: flag ?? true };
+    return p;
+  };
+  it('a project marked ungraded has no score and counts as done', () => {
+    const a = aggregate(graded(false), DEFS_BY_TYPE, { h: { fraction: 1, done: true } });
+    expect(a.score).toBeNull();
+    expect(a.scoredCount).toBe(0);
+    expect(a.allScoredDone).toBe(true);
+    expect(scoredBlocks(graded(false), DEFS_BY_TYPE)).toEqual([]);
+  });
+  it('an activity marked ungraded is left out of the total', () => {
+    expect(scoredBlocks(graded(), DEFS_BY_TYPE)).toEqual([{ id: 'h', points: 10 }]);
+    const a = aggregate(graded(), DEFS_BY_TYPE, { h: { fraction: 1, done: true } });
+    expect(a.score).toEqual({ raw: 10, max: 10 });
+    expect(a.allScoredDone).toBe(true); // the ungraded drag and drop is not required
+  });
+  it('old projects without the flag stay graded', () => {
+    const p = withEls(el('h', 'hotspots', hs() as unknown as Record<string, unknown>));
+    expect(migrate(p).settings.graded).toBe(true);
+  });
+});
+
 describe('migrate v1 -> v2', () => {
   it('wraps a single activity into one page with one block', () => {
     const v1 = {

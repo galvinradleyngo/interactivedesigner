@@ -1,5 +1,5 @@
 import type { ProjectDoc, ScoreResult } from '../schema/types';
-import { blockPoints, type BlockTypeDef } from './types';
+import { blockPoints, isGraded, type BlockTypeDef } from './types';
 
 export interface BlockResult {
   fraction: number;
@@ -22,7 +22,11 @@ export function scoredBlocks(
   for (const page of project.pages) {
     for (const el of page.elements) {
       const def = defs.get(el.type);
-      if (def?.isScored?.(el.props) && blockPoints(el.props) > 0)
+      if (
+        def?.isScored?.(el.props) &&
+        isGraded(project.settings, el.props) &&
+        blockPoints(el.props) > 0
+      )
         out.push({ id: el.id, points: blockPoints(el.props) });
     }
   }

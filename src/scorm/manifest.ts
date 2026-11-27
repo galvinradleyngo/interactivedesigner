@@ -8,8 +8,8 @@ export interface ManifestInput {
   id: string;
   /** Every file in the zip except imsmanifest.xml. */
   files: string[];
-  /** Passing score percent (written as masteryscore for 1.2). */
-  passingScore: number;
+  /** Passing score percent (written as masteryscore for 1.2). null = ungraded: omit it. */
+  passingScore: number | null;
 }
 
 export function buildManifest(input: ManifestInput): string {
@@ -21,7 +21,10 @@ export function buildManifest(input: ManifestInput): string {
     .join('\n');
 
   if (input.version === '1.2') {
-    const mastery = Math.min(100, Math.max(0, Math.round(input.passingScore)));
+    const mastery =
+      input.passingScore === null
+        ? null
+        : Math.min(100, Math.max(0, Math.round(input.passingScore)));
     return `<?xml version="1.0" encoding="UTF-8"?>
 <manifest identifier="${manifestId}" version="1"
   xmlns="http://www.imsproject.org/xsd/imscp_rootv1p1p2"
@@ -37,8 +40,7 @@ export function buildManifest(input: ManifestInput): string {
       <title>${title}</title>
       <item identifier="ITEM-1" identifierref="RES-1" isvisible="true">
         <title>${title}</title>
-        <adlcp:masteryscore>${mastery}</adlcp:masteryscore>
-      </item>
+${mastery === null ? '' : `        <adlcp:masteryscore>${mastery}</adlcp:masteryscore>\n`}      </item>
     </organization>
   </organizations>
   <resources>

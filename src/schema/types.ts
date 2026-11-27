@@ -6,6 +6,20 @@ export const SCHEMA_VERSION = 2;
 export const STAGE_W = 960;
 export const STAGE_H = 540;
 
+/** Page shapes. The logical width is always STAGE_W; only the height changes. */
+export type PageShape = '16:9' | '4:3' | '1:1' | '3:4' | '9:16';
+export const PAGE_SHAPES: { id: PageShape; label: string; hint: string; h: number }[] = [
+  { id: '16:9', label: 'Widescreen 16:9', hint: 'Desktop and laptop, slides', h: 540 },
+  { id: '4:3', label: 'Standard 4:3', hint: 'Tablets held sideways, classic slides', h: 720 },
+  { id: '1:1', label: 'Square 1:1', hint: 'Works on any screen', h: 960 },
+  { id: '3:4', label: 'Portrait tablet 3:4', hint: 'Tablets held upright', h: 1280 },
+  { id: '9:16', label: 'Portrait phone 9:16', hint: 'Phones held upright', h: 1707 },
+];
+/** Logical page height for a design (defaults to widescreen). */
+export function stageHeight(design: { pageShape?: PageShape } | undefined): number {
+  return PAGE_SHAPES.find((s) => s.id === design?.pageShape)?.h ?? STAGE_H;
+}
+
 export type ScormVersion = '2004' | '1.2';
 
 export interface ProjectSettings {
@@ -14,6 +28,8 @@ export interface ProjectSettings {
   scormVersion: ScormVersion;
   showFeedback: boolean;
   allowRetry: boolean;
+  /** false = ungraded: no scores, points or pass/fail anywhere, and no score is reported to the LMS. */
+  graded: boolean;
 }
 
 export type FontChoice = 'system' | 'serif' | 'rounded' | 'mono';
@@ -27,6 +43,7 @@ export interface Design {
   radius: number;
   /** `media:<id>` reference or null. */
   backgroundImage: string | null;
+  pageShape: PageShape;
 }
 
 export interface MediaItem {
@@ -76,6 +93,7 @@ export const DEFAULT_SETTINGS: ProjectSettings = {
   scormVersion: '2004',
   showFeedback: true,
   allowRetry: true,
+  graded: true,
 };
 
 export const DEFAULT_DESIGN: Design = {
@@ -85,6 +103,7 @@ export const DEFAULT_DESIGN: Design = {
   font: 'system',
   radius: 12,
   backgroundImage: null,
+  pageShape: '16:9',
 };
 
 /** Result of scoring: raw points earned out of max. */

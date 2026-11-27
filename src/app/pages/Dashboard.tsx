@@ -137,6 +137,7 @@ export function Dashboard() {
           </li>
           {items?.map((p) => {
             const labels = activityLabels(p.doc);
+            const ungraded = p.doc.settings.graded === false;
             return (
               <li key={p.id}>
                 <article className="card">
@@ -158,6 +159,7 @@ export function Dashboard() {
                       {new Date(p.updatedAt).toLocaleDateString()}
                     </p>
                     <div className="chips">
+                      {ungraded && <span className="chip tag-ungraded">Ungraded</span>}
                       {labels.length ? (
                         labels.map((l) => (
                           <span key={l} className="chip">

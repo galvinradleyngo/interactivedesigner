@@ -100,7 +100,7 @@ export async function buildScormZip(
       title: activity.title,
       id: `${safeFileName(activity.title, 'x')}-${Date.now().toString(36)}`,
       files,
-      passingScore: activity.settings.passingScore,
+      passingScore: activity.settings.graded === false ? null : activity.settings.passingScore,
     }),
   );
 

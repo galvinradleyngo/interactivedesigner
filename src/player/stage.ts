@@ -1,8 +1,9 @@
 import { DEFS_BY_TYPE } from '../plugins/defs';
-import type { BlockContext } from '../plugins/types';
+import { isGraded, type BlockContext } from '../plugins/types';
 import {
   STAGE_H,
   STAGE_W,
+  stageHeight,
   type Design,
   type Page,
   type ProjectDoc,
@@ -21,6 +22,8 @@ export const FONTS: Record<Design['font'], string> = {
 export interface StageEnv {
   project: ProjectDoc;
   editing: boolean;
+  /** Show author hints for unfinished blocks. Defaults to `editing`. */
+  hints?: boolean;
   resolveMedia(ref: unknown): string;
   getState?(id: string): unknown;
   setState?(id: string, s: unknown): void;
@@ -45,6 +48,11 @@ export function applyTheme(root: HTMLElement, design: Design): void {
   s.setProperty('--font', FONTS[design.font] ?? FONTS.system);
 }
 
+/** Give a stage element the project's page shape. */
+export function applyStageShape(stage: HTMLElement, design: Design): void {
+  stage.style.aspectRatio = `${STAGE_W} / ${stageHeight(design)}`;
+}
+
 /** Page background (colour + optional image), falling back to project design. */
 export function applyPageBackground(
   stage: HTMLElement,
@@ -59,11 +67,15 @@ export function applyPageBackground(
 }
 
 /** Position an element's wrapper from its logical rect (percent so it scales with the stage). */
-export function applyRect(node: HTMLElement, el: Pick<StageElement, 'x' | 'y' | 'w' | 'h'>): void {
+export function applyRect(
+  node: HTMLElement,
+  el: Pick<StageElement, 'x' | 'y' | 'w' | 'h'>,
+  stageH: number = STAGE_H,
+): void {
   node.style.left = `${(el.x / STAGE_W) * 100}%`;
-  node.style.top = `${(el.y / STAGE_H) * 100}%`;
+  node.style.top = `${(el.y / stageH) * 100}%`;
   node.style.width = `${(el.w / STAGE_W) * 100}%`;
-  node.style.height = `${(el.h / STAGE_H) * 100}%`;
+  node.style.height = `${(el.h / stageH) * 100}%`;
 }
 
 /** Render one block into `root` using its player plugin. */
@@ -83,6 +95,8 @@ export function renderBlock(root: HTMLElement, el: StageElement, env: StageEnv):
     settings: env.project.settings,
     design: env.project.design,
     editing: env.editing,
+    hints: env.hints ?? env.editing,
+    graded: isGraded(env.project.settings, el.props),
     resolveMedia: env.resolveMedia,
     state: env.getState?.(el.id) ?? null,
     setState: (s) => env.setState?.(el.id, s),
@@ -97,7 +111,7 @@ export function paintElement(parent: HTMLElement, el: StageElement, env: StageEn
   const wrap = document.createElement('div');
   wrap.className = 'ap-el';
   wrap.dataset.id = el.id;
-  applyRect(wrap, el);
+  applyRect(wrap, el, stageHeight(env.project.design));
   const block = document.createElement('div');
   wrap.append(block);
   parent.append(wrap);

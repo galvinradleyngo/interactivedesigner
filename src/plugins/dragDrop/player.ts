@@ -12,6 +12,16 @@ export const dragDropPlayer: BlockPlayer<DdProps> = {
     let picked: string | null = null;
 
     root.style.background = props.bgColor || '';
+    if (ctx.hints && props.zones.length === 0 && props.items.length === 0)
+      root.append(
+        h(
+          'div',
+          { class: 'ap-placeholder' },
+          'Drag and drop: add drop zones and items in the Element panel',
+        ),
+      );
+    else if (ctx.hints && !props.items.some((i) => i.zone))
+      root.append(h('div', { class: 'ap-hint-pill' }, 'Set which zone each item belongs in'));
     const bg = resolveMedia(props.background);
     if (bg) root.append(h('img', { class: 'dd-bg', src: bg, alt: '', draggable: 'false' }));
 
@@ -88,6 +98,16 @@ export const dragDropPlayer: BlockPlayer<DdProps> = {
       b.style.width = `${it.w}%`;
       b.style.height = `${it.h}%`;
       b.style.zIndex = '';
+    };
+    /** Graded: "2 of 3 placed correctly". Ungraded: plain-language feedback with no tally. */
+    const resultText = (): string => {
+      const total = props.items.filter((i) => i.zone).length;
+      const right = props.items.filter((i) => i.zone && st.place[i.id] === i.zone).length;
+      if (ctx.graded) return `${right} of ${total} placed correctly.`;
+      const wrong = props.items.some((i) => st.place[i.id] && st.place[i.id] !== i.zone);
+      return right === total && !wrong
+        ? 'All placed correctly.'
+        : 'Some items are not in the right zone yet.';
     };
     const count = (zoneId: string) => Object.values(st.place).filter((z) => z === zoneId).length;
     const zoneOf = (id: string) => props.zones.find((z) => z.id === id);
@@ -232,10 +252,6 @@ export const dragDropPlayer: BlockPlayer<DdProps> = {
       layout();
     });
     layout();
-    if (st.checked && showFeedback) {
-      const total = props.items.filter((i) => i.zone).length;
-      const right = props.items.filter((i) => i.zone && st.place[i.id] === i.zone).length;
-      live.textContent = `${right} of ${total} placed correctly.`;
-    }
+    if (st.checked && showFeedback) live.textContent = resultText();
   },
 };

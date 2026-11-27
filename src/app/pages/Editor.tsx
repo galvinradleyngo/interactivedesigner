@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import {
-  STAGE_H,
   STAGE_W,
+  stageHeight,
   type Page,
   type ProjectDoc,
   type StageElement,
@@ -11,6 +11,8 @@ import { newKey } from '../../schema/migrate';
 import { Icon } from '../components/Icon';
 import { PreviewModal } from '../components/Preview';
 import { Canvas } from '../editor/Canvas';
+import { checkProject, type Issue } from '../editor/checks';
+import { IssuesMenu } from '../editor/IssuesMenu';
 import { useHistory } from '../editor/history';
 import { Inspector } from '../editor/Inspector';
 import { LeftPanel } from '../editor/LeftPanel';
@@ -39,6 +41,7 @@ export function Editor() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [editingBlock, setEditingBlock] = useState<string | null>(null);
   const [editingText, setEditingText] = useState<string | null>(null);
+  const [peek, setPeek] = useState<Record<string, boolean>>({});
   const [sub, setSub] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [snapOn, setSnapOn] = useState(true);
@@ -71,6 +74,12 @@ export function Editor() {
     },
     [h],
   );
+
+  const issues = useMemo(() => (doc ? checkProject(doc) : []), [doc]);
+  const goIssue = (it: Issue) => {
+    setPageId(it.pageId);
+    setSelectedId(it.elementId);
+  };
 
   const page: Page | undefined = doc?.pages.find((p) => p.id === pageId) ?? doc?.pages[0];
   const pgId = page?.id ?? '';
@@ -128,7 +137,7 @@ export function Editor() {
   /* Actions */
   const addElement = (type: string) => {
     if (!page) return;
-    const el = model.newElement(type);
+    const el = model.newElement(type, undefined, stageHeight(doc?.design));
     change((d) => model.addElement(d, pgId, el));
     setSelectedId(el.id);
     setSub(null);
@@ -197,7 +206,7 @@ export function Editor() {
           ...model.clone(src),
           id: newKey('e'),
           x: Math.min(src.x + 20, STAGE_W - 24),
-          y: Math.min(src.y + 20, STAGE_H - 24),
+          y: Math.min(src.y + 20, stageHeight(cur.design) - 24),
         };
         clipboard.current = copy;
         h.set(model.addElement(cur, pgId, copy));
@@ -244,7 +253,7 @@ export function Editor() {
       const { blob, fileName } = await buildScormZip(docRef.current ?? doc);
       download(blob, fileName);
       setMsg(
-        `Exported ${fileName} (SCORM ${doc.settings.scormVersion === '2004' ? '2004 4th Edition' : '1.2'}).`,
+        `Exported ${fileName} (SCORM ${doc.settings.scormVersion === '2004' ? '2004 4th Edition' : '1.2'}${doc.settings.graded === false ? ', ungraded' : ''}).${issues.length ? ` Note: ${issues.length} unfinished ${issues.length === 1 ? 'item' : 'items'}, see “to finish” in the top bar.` : ''}`,
       );
     } catch (e) {
       setMsg((e as Error).message);
@@ -333,6 +342,7 @@ export function Editor() {
           <input type="checkbox" checked={snapOn} onChange={(e) => setSnapOn(e.target.checked)} />{' '}
           Snap
         </label>
+        <IssuesMenu issues={issues} onGo={goIssue} />
         <button type="button" onClick={() => void save().then(() => setPreview(true))}>
           <Icon name="play" size={16} /> Preview
         </button>
@@ -409,29 +419,36 @@ export function Editor() {
             setSub={setSub}
             editingText={editingText}
             setEditingText={setEditingText}
+            peek={peek}
           />
           <div className="pagebar">
-            <button
-              type="button"
-              className="iconbtn"
-              disabled={pageIdx === 0}
-              onClick={() => setPageId(doc.pages[pageIdx - 1]?.id ?? pgId)}
-              aria-label="Previous page"
-            >
-              <Icon name="back" size={16} />
-            </button>
-            <span>
-              Page {pageIdx + 1} of {doc.pages.length}: {page.name}
-            </span>
-            <button
-              type="button"
-              className="iconbtn"
-              disabled={pageIdx === doc.pages.length - 1}
-              onClick={() => setPageId(doc.pages[pageIdx + 1]?.id ?? pgId)}
-              aria-label="Next page"
-            >
-              <Icon name="back" size={16} />
-            </button>
+            {doc.pages.length > 1 ? (
+              <>
+                <button
+                  type="button"
+                  className="iconbtn"
+                  disabled={pageIdx === 0}
+                  onClick={() => setPageId(doc.pages[pageIdx - 1]?.id ?? pgId)}
+                  aria-label="Previous page"
+                >
+                  <Icon name="back" size={16} />
+                </button>
+                <span>
+                  Page {pageIdx + 1} of {doc.pages.length}: {page.name}
+                </span>
+                <button
+                  type="button"
+                  className="iconbtn"
+                  disabled={pageIdx === doc.pages.length - 1}
+                  onClick={() => setPageId(doc.pages[pageIdx + 1]?.id ?? pgId)}
+                  aria-label="Next page"
+                >
+                  <Icon name="back" size={16} />
+                </button>
+              </>
+            ) : (
+              <span>{page.name} (add pages from the Pages tab)</span>
+            )}
           </div>
         </main>
 
@@ -449,13 +466,22 @@ export function Editor() {
           sub={sub}
           setSub={setSub}
           startBlockEdit={() => selected && setEditingBlock(selected.id)}
+          peek={!!(selected && peek[selected.id])}
+          setPeek={(v) => selected && setPeek((m) => ({ ...m, [selected.id]: v }))}
           onAlign={(to) => selected && change((d) => model.alignElement(d, pgId, selected.id, to))}
           onZ={(m) => selected && change((d) => model.reorder(d, pgId, selected.id, m))}
           onDuplicate={() => selected && duplicateEl(selected.id)}
           onDelete={() => selected && deleteEl(selected.id)}
         />
       </div>
-      {preview && <PreviewModal doc={doc} startPage={pageIdx} onClose={() => setPreview(false)} />}
+      {preview && (
+        <PreviewModal
+          doc={doc}
+          startPage={pageIdx}
+          issueCount={issues.length}
+          onClose={() => setPreview(false)}
+        />
+      )}
     </div>
   );
 }

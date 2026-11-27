@@ -2,12 +2,14 @@ import type { BlockPlayer } from '../plugins/types';
 import { buttonPlayer } from '../plugins/button/player';
 import { dragDropPlayer } from '../plugins/dragDrop/player';
 import { flashcardsPlayer } from '../plugins/flashcards/player';
+import { flipCardPlayer } from '../plugins/flipCard/player';
 import { hotspotsPlayer } from '../plugins/hotspots/player';
 import { imagePlayer } from '../plugins/image/player';
 import { imageComparePlayer } from '../plugins/imageCompare/player';
 import { multipleChoicePlayer } from '../plugins/multipleChoice/player';
 import { shapePlayer } from '../plugins/shape/player';
 import { textPlayer } from '../plugins/text/player';
+import { timelinePlayer } from '../plugins/timeline/player';
 
 const players = [
   textPlayer,
@@ -17,6 +19,8 @@ const players = [
   hotspotsPlayer,
   dragDropPlayer,
   flashcardsPlayer,
+  flipCardPlayer,
+  timelinePlayer,
   imageComparePlayer,
   multipleChoicePlayer,
 ] as unknown as BlockPlayer[];

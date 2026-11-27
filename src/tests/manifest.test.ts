@@ -55,6 +55,30 @@ describe('buildManifest 1.2', () => {
   });
 });
 
+describe('buildManifest ungraded', () => {
+  it('omits the 1.2 mastery score when passingScore is null', () => {
+    const xml = buildManifest({
+      version: '1.2',
+      title: 'Practice',
+      id: 'x',
+      files,
+      passingScore: null,
+    });
+    expect(parse(xml).getElementsByTagName('adlcp:masteryscore')).toHaveLength(0);
+    expect(xml).toContain('<item identifier="ITEM-1"');
+  });
+  it('2004 manifests are unaffected', () => {
+    const xml = buildManifest({
+      version: '2004',
+      title: 'Practice',
+      id: 'x',
+      files,
+      passingScore: null,
+    });
+    expect(parse(xml).querySelector('schemaversion')?.textContent).toBe('2004 4th Edition');
+  });
+});
+
 describe('names', () => {
   it('sanitizes zip filenames', () => {
     expect(safeFileName('My Quiz: Ch. 1/2?')).toBe('My-Quiz-Ch.-12.zip');
