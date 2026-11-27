@@ -8,6 +8,7 @@ import { HotspotsOverlay } from '../plugins/hotspots/Overlay';
 import { HotspotsPanel } from '../plugins/hotspots/Panel';
 import { ImagePanel } from '../plugins/image/Panel';
 import { ImageComparePanel } from '../plugins/imageCompare/Panel';
+import { InteractiveVideoPanel } from '../plugins/interactiveVideo/Panel';
 import { MultipleChoicePanel } from '../plugins/multipleChoice/Panel';
 import { ShapePanel } from '../plugins/shape/Panel';
 import { TextPanel } from '../plugins/text/Panel';
@@ -34,6 +35,7 @@ export const EDITOR_BLOCKS: Record<string, EditorBlock> = {
   dragDrop: { Panel: cast(DragDropPanel), Overlay: castO(DragDropOverlay) },
   flashcards: { Panel: cast(FlashcardsPanel) },
   flipCard: { Panel: cast(FlipCardPanel) },
+  interactiveVideo: { Panel: cast(InteractiveVideoPanel) },
   timeline: { Panel: cast(TimelinePanel) },
   imageCompare: { Panel: cast(ImageComparePanel) },
   multipleChoice: { Panel: cast(MultipleChoicePanel) },

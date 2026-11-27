@@ -1,5 +1,6 @@
 import { stripHtml } from '../../schema/html';
 import { DEFS_BY_TYPE } from '../../plugins/defs';
+import { formatTime, parseYouTubeId } from '../../plugins/interactiveVideo/type';
 import { STAGE_W, stageHeight, type ProjectDoc } from '../../schema/types';
 
 export interface Issue {
@@ -52,6 +53,19 @@ export function checkProject(doc: ProjectDoc): Issue[] {
           };
           if (empty(p.front)) add('has nothing on the front');
           if (empty(p.back)) add('has nothing on the back');
+          break;
+        }
+        case 'interactiveVideo': {
+          if (!parseYouTubeId(String(p.url ?? ''))) add('needs a YouTube link');
+          const cps = arr('checkpoints');
+          if (cps.length === 0) add('has no checkpoints, so it will just play the video');
+          for (const c of cps) {
+            if (c.kind !== 'question') continue;
+            const at = formatTime(Number(c.time) || 0);
+            const opts = Array.isArray(c.options) ? (c.options as Record<string, unknown>[]) : [];
+            if (!stripHtml(String(c.html ?? '')).trim()) add(`question at ${at} has no text`);
+            if (!opts.some((o) => o.correct)) add(`question at ${at} has no correct answer marked`);
+          }
           break;
         }
         case 'timeline':

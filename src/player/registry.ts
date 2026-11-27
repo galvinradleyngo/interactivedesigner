@@ -6,6 +6,7 @@ import { flipCardPlayer } from '../plugins/flipCard/player';
 import { hotspotsPlayer } from '../plugins/hotspots/player';
 import { imagePlayer } from '../plugins/image/player';
 import { imageComparePlayer } from '../plugins/imageCompare/player';
+import { interactiveVideoPlayer } from '../plugins/interactiveVideo/player';
 import { multipleChoicePlayer } from '../plugins/multipleChoice/player';
 import { shapePlayer } from '../plugins/shape/player';
 import { textPlayer } from '../plugins/text/player';
@@ -20,6 +21,7 @@ const players = [
   dragDropPlayer,
   flashcardsPlayer,
   flipCardPlayer,
+  interactiveVideoPlayer,
   timelinePlayer,
   imageComparePlayer,
   multipleChoicePlayer,
