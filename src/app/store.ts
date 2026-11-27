@@ -45,9 +45,21 @@ export function onStorageBlocked(cb: BlockedListener): () => void {
 }
 const notify = (blocked: boolean) => blockedListeners.forEach((l) => l(blocked));
 
+/**
+ * If storage has not opened after this long, assume something else is holding it. A browser only
+ * says "blocked" to the tab that is actively upgrading; tabs queued behind it just wait silently,
+ * so the app cannot rely on that signal alone.
+ */
+let slowOpenMs = 3000;
+/** Tests shorten the wait. */
+export function setSlowOpenMs(ms: number): void {
+  slowOpenMs = ms;
+}
+
 function open(): Promise<IDBDatabase> {
   dbPromise ??= new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, 2);
+    const slow = setTimeout(() => notify(true), slowOpenMs);
     req.onupgradeneeded = () => {
       const db = req.result;
       if (!db.objectStoreNames.contains(PROJECTS))
@@ -57,6 +69,7 @@ function open(): Promise<IDBDatabase> {
     // Another tab still holds an older connection open: the upgrade waits until it closes.
     req.onblocked = () => notify(true);
     req.onsuccess = () => {
+      clearTimeout(slow);
       const db = req.result;
       // If a newer version of the app needs to upgrade, step aside instead of blocking it.
       db.onversionchange = () => {
@@ -67,6 +80,7 @@ function open(): Promise<IDBDatabase> {
       resolve(db);
     };
     req.onerror = () => {
+      clearTimeout(slow);
       dbPromise = null; // allow a retry
       notify(false);
       reject(req.error ?? new Error('Could not open browser storage'));

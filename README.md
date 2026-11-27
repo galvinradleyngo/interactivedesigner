@@ -62,7 +62,7 @@ Activities are saved automatically in **this browser, on this device** (IndexedD
 - Browsers can clear site data (clearing history, private windows, low disk space).
 - So **back up regularly**: **Back up all** on the dashboard downloads every activity in one file; each activity's download button saves just that one, and a folder's buttons download everything in it. **Open activity file** loads either kind (including from another computer or another way of opening the app).
 - To hand an activity to a colleague, send them its activity file.
-- If the dashboard stays on "Loading…" and shows "Waiting for another tab", an older copy of the app is open in another tab or window and is holding the saved activities while the app upgrades its storage. Close the other tabs (including any installed app window) and the page continues by itself. Nothing is lost.
+- If the dashboard stays on "Loading…" and shows "Waiting for another tab", another tab or window of the app (possibly an older one, or one that is itself stuck on "Loading…") is holding the saved activities while the app upgrades its storage. Close **all** other tabs and windows of the site, including any installed app window (or quit and reopen the browser), and the page continues by itself. Nothing is lost.
 
 ## Publishing the hosted version (GitHub Pages)
 
