@@ -1,4 +1,4 @@
-import { useId } from 'react';
+import { useEffect, useId, useRef } from 'react';
 import { Icon } from '../../app/components/Icon';
 import { RichText } from '../../app/components/RichText';
 import { Check, Num, Section, Select, Txt } from '../../app/components/fields';
@@ -104,6 +104,17 @@ export function InteractiveVideoPanel({
   const id = parseYouTubeId(props.url);
   const list = sortedCheckpoints(props.checkpoints);
   const sel = props.checkpoints.find((c) => c.id === sub) ?? null;
+  // Picking a checkpoint (here or on the canvas) brings its editor into view.
+  const editRef = useRef<HTMLDivElement>(null);
+  const selId = sel?.id ?? null;
+  useEffect(() => {
+    const box = editRef.current;
+    if (!selId || !box) return;
+    box.scrollIntoView?.({ block: 'start', behavior: 'smooth' });
+    box.classList.remove('flash');
+    void box.offsetWidth;
+    box.classList.add('flash');
+  }, [selId]);
   const setCp = (cid: string, p: Partial<VideoCheckpoint>, key?: string) =>
     set({ checkpoints: props.checkpoints.map((c) => (c.id === cid ? { ...c, ...p } : c)) }, key);
   const add = (kind: 'prompt' | 'question', time: number) => {
@@ -177,7 +188,7 @@ export function InteractiveVideoPanel({
         </div>
 
         {sel && (
-          <div className="subedit">
+          <div className="subedit" ref={editRef}>
             <div className="grid2">
               <Select
                 label="Type"
@@ -329,7 +340,7 @@ export function InteractiveVideoPanel({
           onChange={(duration) => set({ duration }, `dur-${el.id}`)}
         />
         <Check
-          label="Show captions when the video starts"
+          label="Captions on when the video starts (learners can switch them)"
           checked={props.captions}
           onChange={(captions) => set({ captions })}
         />

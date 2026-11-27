@@ -1794,3 +1794,16 @@ textarea:focus {
   border-radius: 10px;
   padding: 8px 10px;
 }
+
+.subedit.flash {
+  animation: subflash 1.2s ease-out;
+}
+@keyframes subflash {
+  from {
+    box-shadow: 0 0 0 3px var(--accent);
+    background: var(--accent-soft);
+  }
+  to {
+    box-shadow: 0 0 0 3px transparent;
+  }
+}

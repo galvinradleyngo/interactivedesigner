@@ -9,6 +9,10 @@ export interface VideoPlayer {
   /** Length in seconds (0 until the video has loaded). */
   getDuration(): number;
   setMuted(muted: boolean): void;
+  /** 0 (silent) to 100 (full). */
+  setVolume(volume: number): void;
+  /** Show or hide closed captions (when the video has them). */
+  setCaptions(on: boolean): void;
   /** Current position in seconds. */
   getTime(): number;
   seek(seconds: number): void;
@@ -42,6 +46,10 @@ interface YTPlayer {
   pauseVideo(): void;
   mute(): void;
   unMute(): void;
+  setVolume(volume: number): void;
+  loadModule(name: string): void;
+  unloadModule(name: string): void;
+  setOption(module: string, option: string, value: unknown): void;
   getDuration(): number;
   getCurrentTime(): number;
   seekTo(seconds: number, allowSeekAhead: boolean): void;
@@ -158,6 +166,17 @@ export const youtubeEngine: VideoEngine = {
       pause: () => yt?.pauseVideo(),
       getDuration: () => (yt ? yt.getDuration() || 0 : 0),
       setMuted: (m) => (m ? yt?.mute() : yt?.unMute()),
+      setVolume: (v) => yt?.setVolume(Math.max(0, Math.min(100, Math.round(v)))),
+      setCaptions: (on) => {
+        try {
+          if (on) {
+            yt?.loadModule('captions');
+            yt?.setOption('captions', 'reload', true);
+          } else yt?.unloadModule('captions');
+        } catch {
+          /* captions are not available for this video */
+        }
+      },
       getTime: () => (yt ? yt.getCurrentTime() : 0),
       seek: (s) => yt?.seekTo(s, true),
       destroy: () => {

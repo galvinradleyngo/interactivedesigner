@@ -182,6 +182,14 @@ class FakePlayer implements VideoPlayer {
   getDuration() {
     return this.duration;
   }
+  volume = 100;
+  captions = true;
+  setVolume(v: number) {
+    this.volume = v;
+  }
+  setCaptions(on: boolean) {
+    this.captions = on;
+  }
   setMuted(m: boolean) {
     this.calls.push(`muted:${m}`);
     this.muted = m;
@@ -251,8 +259,9 @@ async function jumpTo(time: number) {
 const q = <T extends Element>(root: HTMLElement, sel: string) =>
   root.querySelector(sel) as T | null;
 const btn = (root: HTMLElement, text: string) =>
-  [...root.querySelectorAll('button')].find((b) => b.textContent === text && !b.hidden) as
-    HTMLButtonElement | undefined;
+  [...root.querySelectorAll('button')].find(
+    (b) => (b.getAttribute('aria-label') ?? b.textContent) === text && !b.hidden,
+  ) as HTMLButtonElement | undefined;
 
 describe('interactive video player', () => {
   beforeEach(() => {
@@ -587,7 +596,7 @@ describe('player controls and visible checkpoints', () => {
 
   it('has only play/pause, progress and mute: the progress bar cannot be used to skip', async () => {
     const { root } = mount(props([prompt('p1', 50)]));
-    expect(btn(root, '▶ Play')!.disabled).toBe(true); // not until the video is ready
+    expect(btn(root, 'Play')!.disabled).toBe(true); // not until the video is ready
     await vi.advanceTimersByTimeAsync(0);
     const track = q<HTMLElement>(root, '.iv-track')!;
     expect(track.getAttribute('role')).toBe('progressbar');
@@ -597,15 +606,33 @@ describe('player controls and visible checkpoints', () => {
     expect(players[0]!.calls.some((c) => c.startsWith('seek:'))).toBe(false);
   });
 
+  it('has a volume slider and a captions switch', async () => {
+    const { root } = mount(props([]));
+    await vi.advanceTimersByTimeAsync(0);
+    const vol = q<HTMLInputElement>(root, '.iv-volume')!;
+    vol.value = '40';
+    vol.dispatchEvent(new Event('input'));
+    expect(players[0]!.volume).toBe(40);
+    vol.value = '0';
+    vol.dispatchEvent(new Event('input'));
+    expect(players[0]!.muted).toBe(true);
+    expect(btn(root, 'Unmute')).toBeDefined();
+    const cc = btn(root, 'Closed captions')!;
+    expect(cc.getAttribute('aria-pressed')).toBe('true');
+    cc.click();
+    expect(players[0]!.captions).toBe(false);
+    expect(cc.getAttribute('aria-pressed')).toBe('false');
+  });
+
   it('play, pause and mute work, and the bar shows progress', async () => {
     const { root } = mount(props([]));
     await vi.advanceTimersByTimeAsync(0);
-    btn(root, '▶ Play')!.click();
+    btn(root, 'Play')!.click();
     expect(players[0]!.paused).toBe(false);
     await playTo(25.2);
     expect(q(root, '.iv-track')!.getAttribute('aria-valuenow')).toBe('25');
     expect(q(root, '.iv-time')!.textContent).toBe('0:25 / 1:40');
-    btn(root, '❚❚ Pause')!.click();
+    btn(root, 'Pause')!.click();
     expect(players[0]!.paused).toBe(true);
     btn(root, 'Mute')!.click();
     expect(players[0]!.muted).toBe(true);

@@ -37,6 +37,24 @@ function paintMarkers(
   }
 }
 
+const ICONS = {
+  play: '<path d="M8 5v14l11-7z" fill="currentColor"/>',
+  pause: '<path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor"/>',
+  replay:
+    '<path d="M4 12a8 8 0 1 0 3-6.2M4 4v5h5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>',
+  volume:
+    '<path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+  muted:
+    '<path d="M4 9v6h4l5 4V5L8 9z" fill="currentColor"/><path d="M16 9l5 6M21 9l-5 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>',
+} as const;
+
+/** Show an icon on a control. The accessible name and tooltip carry the words. */
+function setIcon(b: HTMLElement, icon: keyof typeof ICONS, label: string) {
+  b.innerHTML = `<svg viewBox="0 0 24 24" width="1.25em" height="1.25em" aria-hidden="true" focusable="false">${ICONS[icon]}</svg>`;
+  b.setAttribute('aria-label', label);
+  b.title = label;
+}
+
 export const interactiveVideoPlayer: BlockPlayer<InteractiveVideoProps> = {
   type: 'interactiveVideo',
   render(ctx: BlockContext<InteractiveVideoProps>) {
@@ -86,11 +104,33 @@ export const interactiveVideoPlayer: BlockPlayer<InteractiveVideoProps> = {
     const loading = h('div', { class: 'iv-loading' }, 'Loading video…');
     stage.append(host, shield, loading);
 
-    const playBtn = h('button', { class: 'iv-btn', type: 'button' }, '▶ Play');
-    const muteBtn = h(
+    const playBtn = h('button', { class: 'iv-btn iv-icon', type: 'button' });
+    setIcon(playBtn, 'play', 'Play');
+    const muteBtn = h('button', {
+      class: 'iv-btn iv-icon',
+      type: 'button',
+      'aria-pressed': 'false',
+    });
+    setIcon(muteBtn, 'volume', 'Mute');
+    const volume = h('input', {
+      class: 'iv-volume',
+      type: 'range',
+      min: '0',
+      max: '100',
+      step: '5',
+      value: '100',
+      'aria-label': 'Volume',
+    });
+    const ccBtn = h(
       'button',
-      { class: 'iv-btn', type: 'button', 'aria-pressed': 'false' },
-      'Mute',
+      {
+        class: 'iv-btn iv-cc',
+        type: 'button',
+        'aria-pressed': String(props.captions),
+        'aria-label': 'Closed captions',
+        title: 'Closed captions',
+      },
+      'CC',
     );
     const fill = h('div', { class: 'iv-fill' });
     const track = h(
@@ -106,9 +146,20 @@ export const interactiveVideoPlayer: BlockPlayer<InteractiveVideoProps> = {
       fill,
     );
     const timeLabel = h('span', { class: 'iv-time' }, '0:00 / –:––');
-    const controls = h('div', { class: 'iv-controls' }, playBtn, track, timeLabel, muteBtn);
+    const controls = h(
+      'div',
+      { class: 'iv-controls' },
+      playBtn,
+      track,
+      timeLabel,
+      muteBtn,
+      volume,
+      ccBtn,
+    );
     playBtn.disabled = true;
     muteBtn.disabled = true;
+    volume.disabled = true;
+    ccBtn.disabled = true;
     const status = h('p', { class: 'iv-status', 'aria-live': 'polite' });
     root.append(stage, controls, status);
 
@@ -117,6 +168,7 @@ export const interactiveVideoPlayer: BlockPlayer<InteractiveVideoProps> = {
     let ended = false;
     let playing = false;
     let muted = false;
+    let captionsOn = props.captions;
     let openId: string | null = null;
     let panel: HTMLElement | null = null;
     let lastSaved = 0;
@@ -171,11 +223,9 @@ export const interactiveVideoPlayer: BlockPlayer<InteractiveVideoProps> = {
       fill.style.width = `${pct}%`;
       track.setAttribute('aria-valuenow', String(Math.round(pct)));
       timeLabel.textContent = `${formatTime(t)} / ${dur ? formatTime(dur) : '–:––'}`;
-      playBtn.textContent = playing
-        ? '❚❚ Pause'
-        : ended && pending().length === 0
-          ? '↻ Watch again'
-          : '▶ Play';
+      if (playing) setIcon(playBtn, 'pause', 'Pause');
+      else if (ended && pending().length === 0) setIcon(playBtn, 'replay', 'Watch again');
+      else setIcon(playBtn, 'play', 'Play');
       if (timelineScale({ duration: dur, checkpoints: cps }) !== paintedScale) repaintMarkers();
     };
 
@@ -417,8 +467,26 @@ export const interactiveVideoPlayer: BlockPlayer<InteractiveVideoProps> = {
     muteBtn.addEventListener('click', () => {
       muted = !muted;
       player?.setMuted(muted);
-      muteBtn.textContent = muted ? 'Unmute' : 'Mute';
+      setIcon(muteBtn, muted ? 'muted' : 'volume', muted ? 'Unmute' : 'Mute');
       muteBtn.setAttribute('aria-pressed', String(muted));
+    });
+
+    volume.addEventListener('input', () => {
+      const v = Number(volume.value);
+      player?.setVolume(v);
+      // Dragging the slider up un-mutes; dragging it to zero is the same as muting.
+      const shouldMute = v === 0;
+      if (shouldMute !== muted) {
+        muted = shouldMute;
+        player?.setMuted(muted);
+        setIcon(muteBtn, muted ? 'muted' : 'volume', muted ? 'Unmute' : 'Mute');
+        muteBtn.setAttribute('aria-pressed', String(muted));
+      }
+    });
+    ccBtn.addEventListener('click', () => {
+      captionsOn = !captionsOn;
+      player?.setCaptions(captionsOn);
+      ccBtn.setAttribute('aria-pressed', String(captionsOn));
     });
 
     function start() {
@@ -429,13 +497,15 @@ export const interactiveVideoPlayer: BlockPlayer<InteractiveVideoProps> = {
       player = getVideoEngine().create(
         host,
         videoId as string,
-        { captions: props.captions, controls: false },
+        { captions: captionsOn, controls: false },
         {
           onReady() {
             ready = true;
             loading.remove();
             playBtn.disabled = false;
             muteBtn.disabled = false;
+            volume.disabled = false;
+            ccBtn.disabled = false;
             const limit = pending()[0]?.time ?? Infinity;
             const t = Math.min(saved?.t ?? 0, limit);
             if (t > 1) seekTo(t);

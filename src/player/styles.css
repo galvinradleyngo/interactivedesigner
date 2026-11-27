@@ -1083,6 +1083,27 @@ body {
   outline: 3px solid #f59e0b;
   outline-offset: 2px;
 }
+.iv-volume {
+  flex: none;
+  width: 5.5em;
+  min-width: 3em;
+  accent-color: var(--primary, #4f46e5);
+  cursor: pointer;
+}
+.iv-btn.iv-icon {
+  display: inline-grid;
+  place-items: center;
+  min-width: max(2.2em, 36px);
+  padding: 0.2em 0.5em;
+  font-size: 0.9em;
+}
+.iv-btn.iv-cc {
+  padding: 0.2em 0.55em;
+  font-size: 0.75em;
+}
+.iv-btn.iv-cc[aria-pressed='false'] {
+  background: #94a3b8;
+}
 .iv-track {
   position: relative;
   flex: 1;
