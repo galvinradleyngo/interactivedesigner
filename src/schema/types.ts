@@ -3,7 +3,7 @@
 export const SCHEMA_VERSION = 3;
 
 /** Interactions that can be graded. Must match the `gradable` flag in plugins/defs (tested). */
-export const GRADABLE_TYPES: readonly string[] = ['multipleChoice', 'dragDrop'];
+export const GRADABLE_TYPES: readonly string[] = ['multipleChoice', 'dragDrop', 'interactiveVideo'];
 
 /** Logical stage size. Element rects are in these units and scale to any screen. */
 export const STAGE_W = 960;

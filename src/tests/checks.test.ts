@@ -109,3 +109,69 @@ describe('checkProject: off-page elements', () => {
     expect(msgs(d)).toEqual([]);
   });
 });
+
+describe('checkProject: interactive video', () => {
+  const q = (over: Record<string, unknown> = {}) => ({
+    id: 'k1',
+    time: 83,
+    kind: 'question',
+    title: 'Q',
+    html: '<p>Which?</p>',
+    multi: false,
+    options: [
+      { id: 'a', text: 'A', correct: true, feedback: '' },
+      { id: 'b', text: 'B', correct: false, feedback: '' },
+    ],
+    ...over,
+  });
+  const video = (patch: Record<string, unknown>) =>
+    withBlock('interactiveVideo', { url: 'https://youtu.be/M7lc1UVf-VE', ...patch });
+
+  it('a fresh video block needs a link and checkpoints', () => {
+    expect(msgs(withBlock('interactiveVideo'))).toEqual([
+      'Interactive video needs a YouTube link',
+      'Interactive video has no checkpoints, so it will just play the video',
+    ]);
+  });
+  it('accepts a link with a good question', () => {
+    expect(msgs(video({ checkpoints: [q()] }))).toEqual([]);
+  });
+  it('rejects a link that is not YouTube', () => {
+    expect(msgs(video({ url: 'https://vimeo.com/12345678', checkpoints: [q()] }))).toEqual([
+      'Interactive video needs a YouTube link',
+    ]);
+  });
+  it('flags questions with no text or no correct answer, with their time', () => {
+    const noCorrect = q({
+      options: [
+        { id: 'a', text: 'A', correct: false, feedback: '' },
+        { id: 'b', text: 'B', correct: false, feedback: '' },
+      ],
+    });
+    expect(
+      msgs(video({ checkpoints: [noCorrect, q({ id: 'k2', time: 5, html: '<p></p>' })] })),
+    ).toEqual([
+      'Interactive video question at 1:23 has no correct answer marked',
+      'Interactive video question at 0:05 has no text',
+    ]);
+  });
+  it('does not require answers on prompts', () => {
+    expect(
+      msgs(
+        video({
+          checkpoints: [
+            {
+              id: 'p',
+              time: 4,
+              kind: 'prompt',
+              title: 'N',
+              html: '<p>Hi</p>',
+              multi: false,
+              options: [],
+            },
+          ],
+        }),
+      ),
+    ).toEqual([]);
+  });
+});

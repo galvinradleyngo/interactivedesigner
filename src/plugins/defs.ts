@@ -6,6 +6,7 @@ import { flipCardDef } from './flipCard/type';
 import { hotspotsDef } from './hotspots/type';
 import { imageDef } from './image/type';
 import { imageCompareDef } from './imageCompare/type';
+import { interactiveVideoDef } from './interactiveVideo/type';
 import { multipleChoiceDef } from './multipleChoice/type';
 import { shapeDef } from './shape/type';
 import { textDef } from './text/type';
@@ -21,6 +22,7 @@ export const BLOCK_DEFS: BlockTypeDef[] = [
   dragDropDef,
   flashcardsDef,
   flipCardDef,
+  interactiveVideoDef,
   timelineDef,
   imageCompareDef,
   multipleChoiceDef,

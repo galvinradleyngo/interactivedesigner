@@ -65,13 +65,14 @@ describe('drag and drop scoring', () => {
 });
 
 describe('which interactions can be graded', () => {
-  it('only multiple choice and drag and drop', () => {
+  it('only multiple choice, drag and drop and the questions in an interactive video', () => {
+    const expected = ['dragDrop', 'interactiveVideo', 'multipleChoice'];
     expect(
       BLOCK_DEFS.filter((d) => d.gradable)
         .map((d) => d.type)
         .sort(),
-    ).toEqual(['dragDrop', 'multipleChoice']);
-    expect([...GRADABLE_TYPES].sort()).toEqual(['dragDrop', 'multipleChoice']); // schema list stays in sync
+    ).toEqual(expected);
+    expect([...GRADABLE_TYPES].sort()).toEqual(expected); // schema list stays in sync
   });
   it('hotspots, flip cards, timelines, flash cards and comparisons have no grading at all', () => {
     for (const t of [

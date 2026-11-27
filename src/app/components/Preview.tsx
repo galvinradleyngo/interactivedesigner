@@ -59,6 +59,8 @@ export function PreviewModal({ doc, startPage, issueCount, onClose }: Props) {
   }, []);
 
   const d = DEVICES.find((x) => x.id === device) ?? DEVICES[0]!;
+  // YouTube refuses to play inside a fully sandboxed (null-origin) frame, so a video needs a real origin.
+  const hasVideo = doc.pages.some((pg) => pg.elements.some((e) => e.type === 'interactiveVideo'));
   const wideProject = STAGE_W > stageHeight(doc.design) * 1.1;
   const full = device === 'desktop';
   const w = full ? box.w : landscape ? d.h : d.w;
@@ -126,7 +128,11 @@ export function PreviewModal({ doc, startPage, issueCount, onClose }: Props) {
           <iframe
             key={restart}
             title="Activity preview"
-            sandbox="allow-scripts"
+            sandbox={
+              hasVideo
+                ? 'allow-scripts allow-same-origin allow-presentation allow-popups'
+                : 'allow-scripts'
+            }
             srcDoc={srcDoc}
             style={
               full

@@ -12,9 +12,9 @@ It is **local-first and works fully offline**: no accounts, no server, no databa
 You make **activities**. An activity is one or more pages; every new activity starts as one blank canvas that you fill with elements and interactions and arrange freely.
 
 - **Elements:** text (type directly on the canvas), image, shape, button (go to the next page, the previous page or a specific page).
-- **Interactions:** multiple choice, drag and drop (labelling, sorting, sequencing), hotspots (click points on an image to reveal text or pictures, or a "find the spot" self-check), flash cards, flip card (a shape with text and/or a picture that turns over when clicked), timeline (horizontal or vertical), image comparison slider.
+- **Interactions:** multiple choice, drag and drop (labelling, sorting, sequencing), hotspots (click points on an image to reveal text or pictures, or a "find the spot" self-check), flash cards, flip card (a shape with text and/or a picture that turns over when clicked), timeline (horizontal or vertical), image comparison slider, and **interactive video** (a YouTube video that pauses at checkpoints for prompts and multiple-choice questions the learner must answer to continue).
 - **One page = no Back/Next.** Navigation buttons only appear when an activity has more than one page.
-- **Grading is off by default.** The switch in the top bar (and the **Grading** tab) turns it on. When it is off, learners see no scores, points, percentages or pass/fail, and only completion is sent to the LMS. When it is on, **only multiple choice and drag and drop can be graded** (flip cards, hotspots, timelines, flash cards and the comparison slider are for learning, not marks). In the Grading tab you pick which of those count, give each its points, and set the passing score; the learner's score is the share of the total points they earn.
+- **Grading is off by default.** The switch in the top bar (and the **Grading** tab) turns it on. When it is off, learners see no scores, points, percentages or pass/fail, and only completion is sent to the LMS. When it is on, **only multiple choice, drag and drop and the questions in an interactive video can be graded** (flip cards, hotspots, timelines, flash cards and the comparison slider are for learning, not marks). In the Grading tab you pick which of those count, give each its points, and set the passing score; the learner's score is the share of the total points they earn.
 - **Page shape:** widescreen 16:9 (default), 4:3, square, portrait tablet or portrait phone, so you can design for how learners will hold their device.
 - **Preview** at Desktop, Tablet or Phone size, in portrait or landscape, before you export.
 - **Blends into the course page:** the area around the page is transparent by default; Settings has an optional "Background around the page" colour.
@@ -22,7 +22,7 @@ You make **activities**. An activity is one or more pages; every new activity st
 - **Folders:** organize activities into folders from the dashboard, move activities between them, **duplicate** an activity, and download everything in a folder in one go (as a zip of SCORM packages, or as one activity file).
 - Activity files (`.idactivity.json`) with images embedded, for backups and for sharing work between designers (they remember which folder an activity was in). Older files and saved work open automatically.
 
-Planned next: True/False, Fill in the blanks (both gradable), Interactive Video (YouTube), Branching, Game map, Crossword, Word search, Memory game, audio, multi-select and rotation.
+Planned next: True/False, Fill in the blanks (both gradable), open-ended questions in interactive video, Branching, Game map, Crossword, Word search, Memory game, audio, multi-select and rotation.
 
 ## Using the editor
 
@@ -33,6 +33,7 @@ Planned next: True/False, Fill in the blanks (both gradable), Interactive Video 
    - Hotspots: double-click the image to add a hotspot, drag markers to move them.
    - Drag and drop: drag items and zones into place and use the handles to resize (double-click adds an item; Shift+double-click adds a zone). Set which zone each item belongs in from the panel.
    - Flip card: tick **Show the back on the canvas** to design the back side. Copy and paste (or Duplicate) a card to make a grid of them.
+   - Interactive video: paste a YouTube link, then either press **Load the video to pick times** and add a prompt or question where the video is, or add checkpoints by typing their time. The video pauses at each checkpoint; learners cannot skip past one they have not answered. Turn on _must answer correctly_ to make learners retry until right (only the first try is graded).
 5. The right panel has **Element** (position, size, order, lock and the interaction's content), **Page** (name, background), **Grading** (the graded switch, passing score and each gradable interaction's points) and **Settings** (title, SCORM version, feedback, retry, page shape, colours, font).
 6. **to finish** (top bar) lists interactions that are empty or incomplete, such as a hotspots block with no image, and jumps to each one. Previewing one that is not set up explains what is missing instead of showing a blank slide.
 7. **Preview** plays the activity as a learner would, at the device size you choose. **Duplicate** copies the activity. **Export SCORM** downloads the zip.
@@ -103,3 +104,10 @@ If Canvas doesn't offer SCORM at your institution, ask your Canvas administrator
 ### Package layout
 
 `imsmanifest.xml`, `index.html`, `player.js`, `player.css`, `content.json`, `media/…`. The activity data is also embedded in `index.html`, so it loads even from `file://`. Only images that are actually used are included.
+
+### Interactive video: what to know
+
+- Learners watch the video **from YouTube**, so this is the one interaction that needs an internet connection, on a network that allows YouTube. Your Canvas must also allow embedded YouTube videos: **test a package in your own Canvas before building a whole course around it.** The video must allow embedding too, and a package opened by double-clicking the file (outside an LMS) will not play it.
+- Checkpoints are enforced by watching the video's time, so a learner who drags ahead is pulled back to the first unanswered checkpoint. Rewatching earlier parts is allowed. A determined learner can still defeat any browser-based check.
+- YouTube's own full-screen button is turned off, because questions are drawn over the video.
+- Open-ended (typed) answers are not included yet: Canvas has no good way for an instructor to read them.

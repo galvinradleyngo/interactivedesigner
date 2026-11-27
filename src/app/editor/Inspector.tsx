@@ -318,8 +318,9 @@ function GradingTab(p: Props) {
           </span>
         </label>
         <p className="muted">
-          Only multiple choice and drag and drop can be graded. Hotspots, flip cards, timelines and
-          the comparison slider are for learning, not marks.
+          Only multiple choice, drag and drop and the questions in an interactive video can be
+          graded. Hotspots, flip cards, timelines and the comparison slider are for learning, not
+          marks.
         </p>
       </Section>
 

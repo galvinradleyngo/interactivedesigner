@@ -48,6 +48,7 @@ const P: Record<string, string> = {
   warn: 'M12 3l10 18H2zM12 10v5M12 18h.01',
   flip: 'M5 5h6v14H5zM13 8l6-3v14l-6-3zM12 3v18',
   timeline: 'M3 12h18M6 12V7M12 12v5M18 12V7M6 5h.01M12 19h.01M18 5h.01',
+  video: 'M3 6h12v12H3zM15 10l6-3v10l-6-3zM8 10l3 2-3 2z',
   edit: 'M4 20l4-1 11-11-3-3L5 16zM14 6l3 3',
 };
 

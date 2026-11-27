@@ -1,0 +1,121 @@
+{
+  "schemaVersion": 3,
+  "title": "Sample interactive video",
+  "settings": {
+    "passingScore": 80,
+    "scormVersion": "2004",
+    "showFeedback": true,
+    "allowRetry": true,
+    "graded": true
+  },
+  "design": {
+    "primary": "#4f46e5",
+    "background": "#ffffff",
+    "text": "#1f2937",
+    "font": "system",
+    "radius": 12,
+    "backgroundImage": null,
+    "pageShape": "16:9",
+    "surround": ""
+  },
+  "pages": [
+    {
+      "id": "p1",
+      "name": "Watch and answer",
+      "elements": [
+        {
+          "id": "t",
+          "type": "text",
+          "x": 40,
+          "y": 16,
+          "w": 880,
+          "h": 60,
+          "props": {
+            "html": "<p><strong>Watch, then answer</strong></p>",
+            "fontSize": 34,
+            "color": "",
+            "align": "left",
+            "fill": "",
+            "padding": 8
+          }
+        },
+        {
+          "id": "v",
+          "type": "interactiveVideo",
+          "x": 100,
+          "y": 86,
+          "w": 760,
+          "h": 430,
+          "props": {
+            "points": 10,
+            "url": "https://www.youtube.com/watch?v=M7lc1UVf-VE",
+            "requireCorrect": false,
+            "captions": true,
+            "checkpoints": [
+              {
+                "id": "k1",
+                "time": 5,
+                "kind": "prompt",
+                "title": "Before you continue",
+                "html": "<p>Watch closely. You will be asked a question next.</p>",
+                "multi": false,
+                "options": []
+              },
+              {
+                "id": "k2",
+                "time": 12,
+                "kind": "question",
+                "title": "Check your understanding",
+                "html": "<p>What did you just see?</p>",
+                "multi": false,
+                "options": [
+                  {
+                    "id": "a",
+                    "text": "The answer you chose is checked here",
+                    "correct": true,
+                    "feedback": "Correct, nicely done."
+                  },
+                  {
+                    "id": "b",
+                    "text": "Something else",
+                    "correct": false,
+                    "feedback": "Not quite, think about what was shown."
+                  }
+                ]
+              },
+              {
+                "id": "k3",
+                "time": 20,
+                "kind": "question",
+                "title": "Select all that apply",
+                "html": "<p>Which of these are true?</p>",
+                "multi": true,
+                "options": [
+                  {
+                    "id": "a",
+                    "text": "First true statement",
+                    "correct": true,
+                    "feedback": ""
+                  },
+                  {
+                    "id": "b",
+                    "text": "Second true statement",
+                    "correct": true,
+                    "feedback": ""
+                  },
+                  {
+                    "id": "c",
+                    "text": "A false statement",
+                    "correct": false,
+                    "feedback": "That one is not true."
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "media": []
+}
