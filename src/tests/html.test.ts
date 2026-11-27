@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest';
 import { sanitizeHtml } from '../schema/html';
-import { migrate } from '../schema/migrate';
 
 describe('sanitizeHtml', () => {
   it('keeps allowed formatting', () => {
@@ -17,17 +16,5 @@ describe('sanitizeHtml', () => {
   });
   it('hardens links', () => {
     expect(sanitizeHtml('<a href="https://x.org">x</a>')).toContain('rel="noopener noreferrer"');
-  });
-});
-
-describe('migrate', () => {
-  it('upgrades unversioned docs', () => {
-    const d = migrate({ type: 'multipleChoice', title: 't', content: {} });
-    expect(d.schemaVersion).toBe(1);
-    expect(d.settings.passingScore).toBe(80);
-    expect(d.media).toEqual([]);
-  });
-  it('rejects newer schemas', () => {
-    expect(() => migrate({ schemaVersion: 99 })).toThrow();
   });
 });

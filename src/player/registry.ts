@@ -1,8 +1,25 @@
-import type { PlayerPlugin } from '../plugins/types';
+import type { BlockPlayer } from '../plugins/types';
+import { buttonPlayer } from '../plugins/button/player';
+import { dragDropPlayer } from '../plugins/dragDrop/player';
+import { flashcardsPlayer } from '../plugins/flashcards/player';
+import { hotspotsPlayer } from '../plugins/hotspots/player';
+import { imagePlayer } from '../plugins/image/player';
+import { imageComparePlayer } from '../plugins/imageCompare/player';
 import { multipleChoicePlayer } from '../plugins/multipleChoice/player';
+import { shapePlayer } from '../plugins/shape/player';
+import { textPlayer } from '../plugins/text/player';
 
-const plugins: PlayerPlugin<never>[] = [multipleChoicePlayer as PlayerPlugin<never>];
+const players = [
+  textPlayer,
+  imagePlayer,
+  shapePlayer,
+  buttonPlayer,
+  hotspotsPlayer,
+  dragDropPlayer,
+  flashcardsPlayer,
+  imageComparePlayer,
+  multipleChoicePlayer,
+] as unknown as BlockPlayer[];
 
-export function getPlayerPlugin(type: string): PlayerPlugin | undefined {
-  return plugins.find((p) => p.type === type) as PlayerPlugin | undefined;
-}
+const byType = new Map(players.map((p) => [p.type, p]));
+export const getBlockPlayer = (type: string): BlockPlayer | undefined => byType.get(type);

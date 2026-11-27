@@ -1,0 +1,151 @@
+{
+  "schemaVersion": 2,
+  "title": "Sample hotspots",
+  "settings": {
+    "passingScore": 70,
+    "scormVersion": "2004",
+    "showFeedback": true,
+    "allowRetry": true
+  },
+  "design": {
+    "primary": "#4f46e5",
+    "background": "#ffffff",
+    "text": "#1f2937",
+    "font": "system",
+    "radius": 12,
+    "backgroundImage": null
+  },
+  "pages": [
+    {
+      "id": "p1",
+      "name": "Face parts",
+      "elements": [
+        {
+          "id": "t",
+          "type": "text",
+          "x": 40,
+          "y": 24,
+          "w": 880,
+          "h": 60,
+          "props": {
+            "html": "<p><strong>Explore the face</strong></p>",
+            "fontSize": 34,
+            "color": "",
+            "align": "left",
+            "fill": "",
+            "padding": 8
+          }
+        },
+        {
+          "id": "h",
+          "type": "hotspots",
+          "x": 160,
+          "y": 100,
+          "w": 640,
+          "h": 420,
+          "props": {
+            "points": 10,
+            "image": "media:anat",
+            "mode": "explore",
+            "prompt": "",
+            "markerColor": "",
+            "hotspots": [
+              {
+                "id": "eye",
+                "x": 42,
+                "y": 43,
+                "label": "Eye",
+                "html": "<p>Eyes detect light and send signals to the brain.</p>",
+                "image": null,
+                "correct": false
+              },
+              {
+                "id": "mouth",
+                "x": 50,
+                "y": 68,
+                "label": "Mouth",
+                "html": "<p>The mouth is used for eating and speaking.</p>",
+                "image": null,
+                "correct": false
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "pg2",
+      "name": "Find the eye",
+      "elements": [
+        {
+          "id": "t2",
+          "type": "text",
+          "x": 40,
+          "y": 24,
+          "w": 880,
+          "h": 60,
+          "props": {
+            "html": "<p><strong>Quiz: click the left eye</strong></p>",
+            "fontSize": 34,
+            "color": "",
+            "align": "left",
+            "fill": "",
+            "padding": 8
+          }
+        },
+        {
+          "id": "h2",
+          "type": "hotspots",
+          "x": 160,
+          "y": 100,
+          "w": 640,
+          "h": 420,
+          "props": {
+            "points": 10,
+            "image": "media:anat",
+            "mode": "find",
+            "prompt": "Click the eye on the left.",
+            "markerColor": "#0ea5e9",
+            "hotspots": [
+              {
+                "id": "eye",
+                "x": 42,
+                "y": 43,
+                "label": "Left eye",
+                "html": "",
+                "image": null,
+                "correct": true
+              },
+              {
+                "id": "nose",
+                "x": 50,
+                "y": 52,
+                "label": "Nose area",
+                "html": "",
+                "image": null,
+                "correct": false
+              },
+              {
+                "id": "mouth",
+                "x": 50,
+                "y": 68,
+                "label": "Mouth",
+                "html": "",
+                "image": null,
+                "correct": false
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "media": [
+    {
+      "id": "anat",
+      "name": "face.svg",
+      "mime": "image/svg+xml",
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgNDIwIj48cmVjdCB3aWR0aD0iNjQwIiBoZWlnaHQ9IjQyMCIgZmlsbD0iI2UwZjJmZSIvPjxjaXJjbGUgY3g9IjMyMCIgY3k9IjIxMCIgcj0iMTIwIiBmaWxsPSIjZmVjYWNhIiBzdHJva2U9IiNiOTFjMWMiIHN0cm9rZS13aWR0aD0iNiIvPjxjaXJjbGUgY3g9IjI3MCIgY3k9IjE4MCIgcj0iMTgiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzMzMyIgc3Ryb2tlLXdpZHRoPSI0Ii8+PGNpcmNsZSBjeD0iMzcwIiBjeT0iMTgwIiByPSIxOCIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMjYwIDI2MCBRMzIwIDMxMCAzODAgMjYwIiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iNiIvPjwvc3ZnPg=="
+    }
+  ]
+}

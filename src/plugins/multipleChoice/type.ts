@@ -1,4 +1,5 @@
-import type { ActivityTypeDef } from '../types';
+import { newKey } from '../../schema/migrate';
+import type { BlockTypeDef } from '../types';
 import { scoreMultipleChoice } from './score';
 
 export interface McOption {
@@ -19,9 +20,11 @@ export interface McContent {
   intro: string;
   questions: McQuestion[];
 }
+export interface McProps extends McContent {
+  points: number;
+}
 
-let n = 0;
-export const uid = (p: string): string => `${p}${Date.now().toString(36)}${(n++).toString(36)}`;
+export const uid = (p: string): string => newKey(p);
 
 export function newQuestion(): McQuestion {
   return {
@@ -36,11 +39,26 @@ export function newQuestion(): McQuestion {
   };
 }
 
-export const multipleChoiceType: ActivityTypeDef<McContent, number[][]> = {
+/** Learner state: selected option indexes per question, in original option order. */
+export interface McState {
+  i: number;
+  a: number[][];
+  c: number[];
+  s: number;
+  done: boolean;
+}
+
+export const multipleChoiceDef: BlockTypeDef<McProps> = {
   type: 'multipleChoice',
   label: 'Multiple choice',
   description: 'Single or multiple answer questions with per-option feedback.',
-  contentVersion: 1,
-  createDefault: () => ({ intro: '', questions: [newQuestion()] }),
-  score: scoreMultipleChoice,
+  category: 'activity',
+  icon: 'quiz',
+  defaultSize: { w: 720, h: 440 },
+  createDefault: () => ({ points: 10, intro: '', questions: [newQuestion()] }),
+  isScored: () => true,
+  fraction: (p, state) => {
+    const s = state as McState | null;
+    return scoreMultipleChoice(p, s?.a ?? []).raw / 100;
+  },
 };

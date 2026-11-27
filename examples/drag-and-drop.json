@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 2,
+  "title": "Sample drag and drop",
+  "settings": {
+    "passingScore": 70,
+    "scormVersion": "2004",
+    "showFeedback": true,
+    "allowRetry": true
+  },
+  "design": {
+    "primary": "#4f46e5",
+    "background": "#ffffff",
+    "text": "#1f2937",
+    "font": "system",
+    "radius": 12,
+    "backgroundImage": null
+  },
+  "pages": [
+    {
+      "id": "pg3",
+      "name": "Sort the words",
+      "elements": [
+        {
+          "id": "t",
+          "type": "text",
+          "x": 40,
+          "y": 24,
+          "w": 880,
+          "h": 60,
+          "props": {
+            "html": "<p><strong>Sort the words</strong></p>",
+            "fontSize": 34,
+            "color": "",
+            "align": "left",
+            "fill": "",
+            "padding": 8
+          }
+        },
+        {
+          "id": "d",
+          "type": "dragDrop",
+          "x": 120,
+          "y": 100,
+          "w": 720,
+          "h": 420,
+          "props": {
+            "points": 10,
+            "bgColor": "#f8fafc",
+            "background": null,
+            "zones": [
+              {
+                "id": "z1",
+                "label": "Verbs",
+                "x": 4,
+                "y": 6,
+                "w": 44,
+                "h": 52,
+                "capacity": 0
+              },
+              {
+                "id": "z2",
+                "label": "Nouns",
+                "x": 52,
+                "y": 6,
+                "w": 44,
+                "h": 52,
+                "capacity": 0
+              }
+            ],
+            "items": [
+              {
+                "id": "i1",
+                "label": "run",
+                "image": null,
+                "x": 4,
+                "y": 70,
+                "w": 18,
+                "h": 11,
+                "zone": "z1"
+              },
+              {
+                "id": "i2",
+                "label": "table",
+                "image": null,
+                "x": 26,
+                "y": 70,
+                "w": 18,
+                "h": 11,
+                "zone": "z2"
+              },
+              {
+                "id": "i3",
+                "label": "laugh",
+                "image": null,
+                "x": 48,
+                "y": 70,
+                "w": 18,
+                "h": 11,
+                "zone": "z1"
+              },
+              {
+                "id": "i4",
+                "label": "river",
+                "image": null,
+                "x": 70,
+                "y": 70,
+                "w": 18,
+                "h": 11,
+                "zone": "z2"
+              },
+              {
+                "id": "i5",
+                "label": "very",
+                "image": null,
+                "x": 4,
+                "y": 85,
+                "w": 18,
+                "h": 11,
+                "zone": null
+              }
+            ]
+          }
+        }
+      ]
+    }
+  ],
+  "media": []
+}

@@ -1,10 +1,14 @@
 /** Shared, framework-free types. Imported by both the authoring app and the player. */
 
-export const SCHEMA_VERSION = 1;
+export const SCHEMA_VERSION = 2;
+
+/** Logical stage size. Element rects are in these units and scale to any screen. */
+export const STAGE_W = 960;
+export const STAGE_H = 540;
 
 export type ScormVersion = '2004' | '1.2';
 
-export interface ActivitySettings {
+export interface ProjectSettings {
   /** Passing score as a percentage, 0-100. */
   passingScore: number;
   scormVersion: ScormVersion;
@@ -14,14 +18,14 @@ export interface ActivitySettings {
 
 export type FontChoice = 'system' | 'serif' | 'rounded' | 'mono';
 
-/** Per-activity visual design (no global themes). */
+/** Project-wide look; pages can override the background. */
 export interface Design {
   primary: string;
   background: string;
   text: string;
   font: FontChoice;
   radius: number;
-  /** `media:<id>` reference, a URL, or null. */
+  /** `media:<id>` reference or null. */
   backgroundImage: string | null;
 }
 
@@ -33,17 +37,41 @@ export interface MediaItem {
   mime: string;
 }
 
-export interface ActivityDoc<C = unknown> {
-  schemaVersion: number;
+export interface StageElement {
+  id: string;
+  /** Block type: 'text' | 'image' | 'shape' | 'button' or an activity type. */
   type: string;
+  name?: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  locked?: boolean;
+  hidden?: boolean;
+  props: Record<string, unknown>;
+}
+
+export interface Page {
+  id: string;
+  name: string;
+  /** Overrides the project background when set. */
+  background?: string;
+  /** undefined = inherit, null = none, string = media ref. */
+  backgroundImage?: string | null;
+  /** Painted bottom to top. */
+  elements: StageElement[];
+}
+
+export interface ProjectDoc {
+  schemaVersion: number;
   title: string;
-  settings: ActivitySettings;
+  settings: ProjectSettings;
   design: Design;
-  content: C;
+  pages: Page[];
   media: MediaItem[];
 }
 
-export const DEFAULT_SETTINGS: ActivitySettings = {
+export const DEFAULT_SETTINGS: ProjectSettings = {
   passingScore: 80,
   scormVersion: '2004',
   showFeedback: true,
@@ -51,11 +79,11 @@ export const DEFAULT_SETTINGS: ActivitySettings = {
 };
 
 export const DEFAULT_DESIGN: Design = {
-  primary: '#1d4ed8',
+  primary: '#4f46e5',
   background: '#ffffff',
   text: '#1f2937',
   font: 'system',
-  radius: 10,
+  radius: 12,
   backgroundImage: null,
 };
 

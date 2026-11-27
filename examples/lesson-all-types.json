@@ -1,0 +1,470 @@
+{
+  "schemaVersion": 2,
+  "title": "Sample lesson (all activity types)",
+  "settings": {
+    "passingScore": 70,
+    "scormVersion": "2004",
+    "showFeedback": true,
+    "allowRetry": true
+  },
+  "design": {
+    "primary": "#4f46e5",
+    "background": "#ffffff",
+    "text": "#1f2937",
+    "font": "system",
+    "radius": 12,
+    "backgroundImage": null
+  },
+  "pages": [
+    {
+      "id": "pg1",
+      "name": "Welcome",
+      "elements": [
+        {
+          "id": "bg",
+          "type": "shape",
+          "x": 0,
+          "y": 0,
+          "w": 960,
+          "h": 540,
+          "props": {
+            "shape": "rect",
+            "fill": "#eef2ff",
+            "stroke": "",
+            "strokeWidth": 0,
+            "radius": 0,
+            "opacity": 1
+          }
+        },
+        {
+          "id": "t",
+          "type": "text",
+          "x": 120,
+          "y": 150,
+          "w": 720,
+          "h": 120,
+          "props": {
+            "html": "<p><strong>Welcome to the lesson</strong></p>",
+            "fontSize": 54,
+            "color": "#312e81",
+            "align": "center",
+            "fill": "",
+            "padding": 8
+          }
+        },
+        {
+          "id": "s",
+          "type": "text",
+          "x": 160,
+          "y": 280,
+          "w": 640,
+          "h": 70,
+          "props": {
+            "html": "<p>Work through each page. Your score is the total of all activities.</p>",
+            "fontSize": 24,
+            "color": "",
+            "align": "center",
+            "fill": "",
+            "padding": 8
+          }
+        },
+        {
+          "id": "b",
+          "type": "button",
+          "x": 390,
+          "y": 390,
+          "w": 180,
+          "h": 60,
+          "props": {
+            "label": "Start",
+            "action": "next",
+            "page": 1,
+            "fill": "",
+            "color": "#ffffff",
+            "fontSize": 26,
+            "radius": 14
+          }
+        }
+      ]
+    },
+    {
+      "id": "pg2",
+      "name": "Find the eye",
+      "elements": [
+        {
+          "id": "t2",
+          "type": "text",
+          "x": 40,
+          "y": 24,
+          "w": 880,
+          "h": 60,
+          "props": {
+            "html": "<p><strong>Quiz: click the left eye</strong></p>",
+            "fontSize": 34,
+            "color": "",
+            "align": "left",
+            "fill": "",
+            "padding": 8
+          }
+        },
+        {
+          "id": "h2",
+          "type": "hotspots",
+          "x": 160,
+          "y": 100,
+          "w": 640,
+          "h": 420,
+          "props": {
+            "points": 10,
+            "image": "media:anat",
+            "mode": "find",
+            "prompt": "Click the eye on the left.",
+            "markerColor": "#0ea5e9",
+            "hotspots": [
+              {
+                "id": "eye",
+                "x": 42,
+                "y": 43,
+                "label": "Left eye",
+                "html": "",
+                "image": null,
+                "correct": true
+              },
+              {
+                "id": "nose",
+                "x": 50,
+                "y": 52,
+                "label": "Nose area",
+                "html": "",
+                "image": null,
+                "correct": false
+              },
+              {
+                "id": "mouth",
+                "x": 50,
+                "y": 68,
+                "label": "Mouth",
+                "html": "",
+                "image": null,
+                "correct": false
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "pg3",
+      "name": "Sort the words",
+      "elements": [
+        {
+          "id": "t",
+          "type": "text",
+          "x": 40,
+          "y": 24,
+          "w": 880,
+          "h": 60,
+          "props": {
+            "html": "<p><strong>Sort the words</strong></p>",
+            "fontSize": 34,
+            "color": "",
+            "align": "left",
+            "fill": "",
+            "padding": 8
+          }
+        },
+        {
+          "id": "d",
+          "type": "dragDrop",
+          "x": 120,
+          "y": 100,
+          "w": 720,
+          "h": 420,
+          "props": {
+            "points": 10,
+            "bgColor": "#f8fafc",
+            "background": null,
+            "zones": [
+              {
+                "id": "z1",
+                "label": "Verbs",
+                "x": 4,
+                "y": 6,
+                "w": 44,
+                "h": 52,
+                "capacity": 0
+              },
+              {
+                "id": "z2",
+                "label": "Nouns",
+                "x": 52,
+                "y": 6,
+                "w": 44,
+                "h": 52,
+                "capacity": 0
+              }
+            ],
+            "items": [
+              {
+                "id": "i1",
+                "label": "run",
+                "image": null,
+                "x": 4,
+                "y": 70,
+                "w": 18,
+                "h": 11,
+                "zone": "z1"
+              },
+              {
+                "id": "i2",
+                "label": "table",
+                "image": null,
+                "x": 26,
+                "y": 70,
+                "w": 18,
+                "h": 11,
+                "zone": "z2"
+              },
+              {
+                "id": "i3",
+                "label": "laugh",
+                "image": null,
+                "x": 48,
+                "y": 70,
+                "w": 18,
+                "h": 11,
+                "zone": "z1"
+              },
+              {
+                "id": "i4",
+                "label": "river",
+                "image": null,
+                "x": 70,
+                "y": 70,
+                "w": 18,
+                "h": 11,
+                "zone": "z2"
+              },
+              {
+                "id": "i5",
+                "label": "very",
+                "image": null,
+                "x": 4,
+                "y": 85,
+                "w": 18,
+                "h": 11,
+                "zone": null
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "pg4",
+      "name": "Quiz",
+      "elements": [
+        {
+          "id": "m",
+          "type": "multipleChoice",
+          "x": 120,
+          "y": 40,
+          "w": 720,
+          "h": 460,
+          "props": {
+            "points": 10,
+            "intro": "<p>Answer the questions below.</p>",
+            "questions": [
+              {
+                "id": "q1",
+                "text": "<p>Which planet is closest to the Sun?</p>",
+                "multi": false,
+                "shuffle": true,
+                "options": [
+                  {
+                    "id": "a",
+                    "text": "Mercury",
+                    "correct": true,
+                    "feedback": "Correct - Mercury orbits closest."
+                  },
+                  {
+                    "id": "b",
+                    "text": "Venus",
+                    "correct": false,
+                    "feedback": "Venus is second from the Sun."
+                  },
+                  {
+                    "id": "c",
+                    "text": "Mars",
+                    "correct": false,
+                    "feedback": ""
+                  }
+                ]
+              },
+              {
+                "id": "q2",
+                "text": "<p>Select <strong>all</strong> prime numbers.</p>",
+                "multi": true,
+                "shuffle": false,
+                "options": [
+                  {
+                    "id": "a",
+                    "text": "2",
+                    "correct": true,
+                    "feedback": ""
+                  },
+                  {
+                    "id": "b",
+                    "text": "3",
+                    "correct": true,
+                    "feedback": ""
+                  },
+                  {
+                    "id": "c",
+                    "text": "4",
+                    "correct": false,
+                    "feedback": "4 = 2 x 2"
+                  },
+                  {
+                    "id": "d",
+                    "text": "9",
+                    "correct": false,
+                    "feedback": ""
+                  }
+                ]
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "pg5",
+      "name": "Spanish",
+      "elements": [
+        {
+          "id": "t",
+          "type": "text",
+          "x": 40,
+          "y": 24,
+          "w": 880,
+          "h": 60,
+          "props": {
+            "html": "<p><strong>Spanish basics</strong></p>",
+            "fontSize": 34,
+            "color": "",
+            "align": "left",
+            "fill": "",
+            "padding": 8
+          }
+        },
+        {
+          "id": "f",
+          "type": "flashcards",
+          "x": 240,
+          "y": 110,
+          "w": 480,
+          "h": 340,
+          "props": {
+            "shuffle": false,
+            "frontColor": "#4f46e5",
+            "backColor": "#0f766e",
+            "textColor": "#ffffff",
+            "cards": [
+              {
+                "id": "c1",
+                "front": {
+                  "text": "Hello",
+                  "image": null
+                },
+                "back": {
+                  "text": "Hola",
+                  "image": null
+                }
+              },
+              {
+                "id": "c2",
+                "front": {
+                  "text": "Thank you",
+                  "image": null
+                },
+                "back": {
+                  "text": "Gracias",
+                  "image": null
+                }
+              },
+              {
+                "id": "c3",
+                "front": {
+                  "text": "Goodbye",
+                  "image": null
+                },
+                "back": {
+                  "text": "Adi\u00f3s",
+                  "image": null
+                }
+              }
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "id": "pg6",
+      "name": "Flood",
+      "elements": [
+        {
+          "id": "t",
+          "type": "text",
+          "x": 40,
+          "y": 24,
+          "w": 880,
+          "h": 60,
+          "props": {
+            "html": "<p><strong>Before and after</strong></p>",
+            "fontSize": 34,
+            "color": "",
+            "align": "left",
+            "fill": "",
+            "padding": 8
+          }
+        },
+        {
+          "id": "c",
+          "type": "imageCompare",
+          "x": 160,
+          "y": 100,
+          "w": 640,
+          "h": 400,
+          "props": {
+            "before": "media:b",
+            "after": "media:a",
+            "labelBefore": "Before",
+            "labelAfter": "After",
+            "start": 50
+          }
+        }
+      ]
+    }
+  ],
+  "media": [
+    {
+      "id": "anat",
+      "name": "face.svg",
+      "mime": "image/svg+xml",
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgNDIwIj48cmVjdCB3aWR0aD0iNjQwIiBoZWlnaHQ9IjQyMCIgZmlsbD0iI2UwZjJmZSIvPjxjaXJjbGUgY3g9IjMyMCIgY3k9IjIxMCIgcj0iMTIwIiBmaWxsPSIjZmVjYWNhIiBzdHJva2U9IiNiOTFjMWMiIHN0cm9rZS13aWR0aD0iNiIvPjxjaXJjbGUgY3g9IjI3MCIgY3k9IjE4MCIgcj0iMTgiIGZpbGw9IiNmZmYiIHN0cm9rZT0iIzMzMyIgc3Ryb2tlLXdpZHRoPSI0Ii8+PGNpcmNsZSBjeD0iMzcwIiBjeT0iMTgwIiByPSIxOCIgZmlsbD0iI2ZmZiIgc3Ryb2tlPSIjMzMzIiBzdHJva2Utd2lkdGg9IjQiLz48cGF0aCBkPSJNMjYwIDI2MCBRMzIwIDMxMCAzODAgMjYwIiBmaWxsPSJub25lIiBzdHJva2U9IiMzMzMiIHN0cm9rZS13aWR0aD0iNiIvPjwvc3ZnPg=="
+    },
+    {
+      "id": "b",
+      "name": "before.svg",
+      "mime": "image/svg+xml",
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgNDIwIj48cmVjdCB3aWR0aD0iNjQwIiBoZWlnaHQ9IjQyMCIgZmlsbD0iI2JhZTZmZCIvPjxyZWN0IHg9IjQwIiB5PSIyNjAiIHdpZHRoPSI1NjAiIGhlaWdodD0iMTIwIiBmaWxsPSIjODZlZmFjIi8+PGNpcmNsZSBjeD0iNTIwIiBjeT0iOTAiIHI9IjUwIiBmaWxsPSIjZmRlMDQ3Ii8+PHJlY3QgeD0iMjUwIiB5PSIxNzAiIHdpZHRoPSIxNDAiIGhlaWdodD0iMTIwIiBmaWxsPSIjYThhMjllIi8+PC9zdmc+"
+    },
+    {
+      "id": "a",
+      "name": "after.svg",
+      "mime": "image/svg+xml",
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgNDIwIj48cmVjdCB3aWR0aD0iNjQwIiBoZWlnaHQ9IjQyMCIgZmlsbD0iIzk0YTNiOCIvPjxyZWN0IHg9IjQwIiB5PSIyNjAiIHdpZHRoPSI1NjAiIGhlaWdodD0iMTIwIiBmaWxsPSIjNzg3MTZjIi8+PGNpcmNsZSBjeD0iNTIwIiBjeT0iOTAiIHI9IjUwIiBmaWxsPSIjY2JkNWUxIi8+PHJlY3QgeD0iMTgwIiB5PSIxMTAiIHdpZHRoPSI4MCIgaGVpZ2h0PSIxODAiIGZpbGw9IiM2NDc0OGIiLz48cmVjdCB4PSIyODAiIHk9IjE1MCIgd2lkdGg9IjkwIiBoZWlnaHQ9IjE0MCIgZmlsbD0iIzQ3NTU2OSIvPjxyZWN0IHg9IjQwMCIgeT0iOTAiIHdpZHRoPSIxMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjMzM0MTU1Ii8+PC9zdmc+"
+    }
+  ]
+}

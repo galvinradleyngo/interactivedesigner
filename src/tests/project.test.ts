@@ -1,39 +1,33 @@
 import { describe, expect, it } from 'vitest';
 import { parseProject, serializeProject } from '../app/project';
-import { multipleChoiceType } from '../plugins/multipleChoice/type';
-import {
-  DEFAULT_DESIGN,
-  DEFAULT_SETTINGS,
-  SCHEMA_VERSION,
-  type ActivityDoc,
-} from '../schema/types';
+import { newProject } from '../schema/migrate';
+import type { ProjectDoc } from '../schema/types';
 
-const doc = (title: string): ActivityDoc => ({
-  schemaVersion: SCHEMA_VERSION,
-  type: 'multipleChoice',
-  title,
-  settings: { ...DEFAULT_SETTINGS },
-  design: { ...DEFAULT_DESIGN },
-  content: multipleChoiceType.createDefault(),
+const doc = (title: string): ProjectDoc => ({
+  ...newProject(title),
   media: [{ id: 'm1', name: 'a.png', mime: 'image/png', src: 'data:image/png;base64,AAAA' }],
 });
 
 describe('project files', () => {
-  it('round-trips activities with embedded media', () => {
+  it('round-trips projects with embedded media', () => {
     const out = parseProject(serializeProject([doc('A'), doc('B')]));
     expect(out.map((d) => d.title)).toEqual(['A', 'B']);
     expect(out[0]?.media[0]?.src).toBe('data:image/png;base64,AAAA');
+    expect(out[0]?.pages).toHaveLength(1);
   });
-  it('accepts a bare activity JSON', () => {
+  it('accepts a bare project JSON', () => {
     expect(parseProject(JSON.stringify(doc('Solo')))).toHaveLength(1);
   });
-  it('rejects garbage and empty projects', () => {
+  it('rejects garbage and empty files', () => {
     expect(() => parseProject('nope')).toThrow(/valid JSON/);
-    expect(() => parseProject('{"hello":1}')).toThrow(/No activities/);
-    expect(() => parseProject(serializeProject([]))).toThrow(/No activities/);
+    expect(() => parseProject('{"hello":1}')).toThrow(/No projects/);
+    expect(() => parseProject(serializeProject([]))).toThrow(/No projects/);
   });
-  it('migrates old unversioned activities', () => {
-    const old = { type: 'multipleChoice', title: 'Old', content: {} };
-    expect(parseProject(JSON.stringify(old))[0]?.schemaVersion).toBe(SCHEMA_VERSION);
+  it('opens v1 backups (activities[] with a single activity each)', () => {
+    const v1 = { type: 'multipleChoice', title: 'Old', content: { intro: '', questions: [] }, media: [] };
+    const file = { format: 'interactivedesigner-project', version: 1, activities: [v1] };
+    const [p] = parseProject(JSON.stringify(file));
+    expect(p?.title).toBe('Old');
+    expect(p?.pages[0]?.elements[0]?.type).toBe('multipleChoice');
   });
 });
