@@ -32,7 +32,15 @@ const dd = (): DdProps => ({
   ],
 });
 
-const el = (id: string, type: string, props: Record<string, unknown>): StageElement => ({ id, type, x: 0, y: 0, w: 100, h: 100, props });
+const el = (id: string, type: string, props: Record<string, unknown>): StageElement => ({
+  id,
+  type,
+  x: 0,
+  y: 0,
+  w: 100,
+  h: 100,
+  props,
+});
 const withEls = (...els: StageElement[]): ProjectDoc => {
   const p = newProject('t');
   p.pages[0]!.elements = els;
@@ -51,7 +59,12 @@ describe('drag and drop scoring', () => {
   });
   it('is only scored when some item has a correct zone', () => {
     const def = DEFS_BY_TYPE.get('dragDrop')!;
-    expect(def.isScored?.({ ...dd(), items: dd().items.map((i) => ({ ...i, zone: null })) } as unknown as Record<string, unknown>)).toBe(false);
+    expect(
+      def.isScored?.({
+        ...dd(),
+        items: dd().items.map((i) => ({ ...i, zone: null })),
+      } as unknown as Record<string, unknown>),
+    ).toBe(false);
     expect(def.isScored?.(dd() as unknown as Record<string, unknown>)).toBe(true);
   });
 });
@@ -82,7 +95,10 @@ describe('project aggregate', () => {
     ]);
   });
   it('sums fraction x points; unattempted counts as 0', () => {
-    const a = aggregate(project, DEFS_BY_TYPE, { h: { fraction: 1, done: true }, d: { fraction: 0.5, done: true } });
+    const a = aggregate(project, DEFS_BY_TYPE, {
+      h: { fraction: 1, done: true },
+      d: { fraction: 0.5, done: true },
+    });
     expect(a.score).toEqual({ raw: 25, max: 40 });
     expect(a.allScoredDone).toBe(true);
     const b = aggregate(project, DEFS_BY_TYPE, { h: { fraction: 1, done: true } });

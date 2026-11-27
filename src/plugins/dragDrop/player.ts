@@ -16,9 +16,17 @@ export const dragDropPlayer: BlockPlayer<DdProps> = {
     if (bg) root.append(h('img', { class: 'dd-bg', src: bg, alt: '', draggable: 'false' }));
 
     const live = h('div', { class: 'dd-live', 'aria-live': 'polite' });
-    const hint = h('p', { class: 'ap-sr' }, 'Pick up an item with Enter or Space, then choose a zone and press Enter to drop it. Or drag it with the mouse or touch.');
+    const hint = h(
+      'p',
+      { class: 'ap-sr' },
+      'Pick up an item with Enter or Space, then choose a zone and press Enter to drop it. Or drag it with the mouse or touch.',
+    );
     hint.id = `${ctx.el.id}-hint`;
-    const check = h('button', { class: 'ap-btn dd-check', type: 'button' }, showFeedback ? 'Check' : 'Submit');
+    const check = h(
+      'button',
+      { class: 'ap-btn dd-check', type: 'button' },
+      showFeedback ? 'Check' : 'Submit',
+    );
     const retry = h('button', { class: 'ap-btn dd-retry', type: 'button' }, 'Try again');
     const actions = h('div', { class: 'dd-actions' }, live, retry, check);
     root.append(hint);
@@ -26,7 +34,17 @@ export const dragDropPlayer: BlockPlayer<DdProps> = {
     const zoneEls = new Map<string, { box: HTMLElement; slot: HTMLElement }>();
     for (const z of props.zones) {
       const slot = h('div', { class: 'dd-slot' });
-      const box = h('div', { class: 'dd-zone', role: 'group', 'aria-label': `Zone: ${z.label || 'unnamed'}`, tabindex: editing ? '-1' : '0' }, h('div', { class: 'dd-zlabel' }, z.label), slot);
+      const box = h(
+        'div',
+        {
+          class: 'dd-zone',
+          role: 'group',
+          'aria-label': `Zone: ${z.label || 'unnamed'}`,
+          tabindex: editing ? '-1' : '0',
+        },
+        h('div', { class: 'dd-zlabel' }, z.label),
+        slot,
+      );
       box.style.left = `${z.x}%`;
       box.style.top = `${z.y}%`;
       box.style.width = `${z.w}%`;
@@ -45,7 +63,12 @@ export const dragDropPlayer: BlockPlayer<DdProps> = {
     const itemEls = new Map<string, HTMLButtonElement>();
     for (const it of props.items) {
       const label = it.label || 'Item';
-      const b = h('button', { class: 'dd-item', type: 'button', 'aria-describedby': hint.id, 'aria-pressed': 'false' });
+      const b = h('button', {
+        class: 'dd-item',
+        type: 'button',
+        'aria-describedby': hint.id,
+        'aria-pressed': 'false',
+      });
       const img = it.image ? resolveMedia(it.image) : '';
       if (img) b.append(h('img', { src: img, alt: '', draggable: 'false' }));
       if (it.label || !img) b.append(h('span', {}, label));
@@ -124,7 +147,13 @@ export const dragDropPlayer: BlockPlayer<DdProps> = {
       b.addEventListener('pointerdown', (e) => {
         if (st.checked || e.button !== 0) return;
         const r = b.getBoundingClientRect();
-        drag = { sx: e.clientX, sy: e.clientY, ox: e.clientX - r.left, oy: e.clientY - r.top, moved: false };
+        drag = {
+          sx: e.clientX,
+          sy: e.clientY,
+          ox: e.clientX - r.left,
+          oy: e.clientY - r.top,
+          moved: false,
+        };
         b.setPointerCapture(e.pointerId);
       });
       b.addEventListener('pointermove', (e) => {
@@ -189,7 +218,9 @@ export const dragDropPlayer: BlockPlayer<DdProps> = {
       ctx.report({ fraction: frac, done: true });
       const total = props.items.filter((i) => i.zone).length;
       const right = props.items.filter((i) => i.zone && st.place[i.id] === i.zone).length;
-      live.textContent = showFeedback ? `${right} of ${total} placed correctly.` : 'Answer recorded.';
+      live.textContent = showFeedback
+        ? `${right} of ${total} placed correctly.`
+        : 'Answer recorded.';
       layout();
     });
     retry.addEventListener('click', () => {

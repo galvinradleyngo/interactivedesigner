@@ -9,12 +9,33 @@ export const imageComparePlayer: BlockPlayer<CompareProps> = {
     const before = resolveMedia(props.before);
     const after = resolveMedia(props.after);
     if (!before || !after) {
-      if (editing) root.append(h('div', { class: 'ap-placeholder' }, 'Image comparison: choose both images in the panel'));
+      if (editing)
+        root.append(
+          h(
+            'div',
+            { class: 'ap-placeholder' },
+            'Image comparison: choose both images in the panel',
+          ),
+        );
       return;
     }
-    const top = h('img', { class: 'ic-img ic-before', src: before, alt: props.labelBefore, draggable: 'false' });
-    const bottom = h('img', { class: 'ic-img', src: after, alt: props.labelAfter, draggable: 'false' });
-    const line = h('div', { class: 'ic-line', 'aria-hidden': 'true' }, h('span', { class: 'ic-handle' }, '↔'));
+    const top = h('img', {
+      class: 'ic-img ic-before',
+      src: before,
+      alt: props.labelBefore,
+      draggable: 'false',
+    });
+    const bottom = h('img', {
+      class: 'ic-img',
+      src: after,
+      alt: props.labelAfter,
+      draggable: 'false',
+    });
+    const line = h(
+      'div',
+      { class: 'ic-line', 'aria-hidden': 'true' },
+      h('span', { class: 'ic-handle' }, '↔'),
+    );
     const range = h('input', {
       class: 'ic-range',
       type: 'range',

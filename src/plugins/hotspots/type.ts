@@ -30,11 +30,19 @@ export interface HotspotState {
 export const hotspotsDef: BlockTypeDef<HotspotProps> = {
   type: 'hotspots',
   label: 'Hotspots',
-  description: 'Clickable points on an image that reveal text or pictures, or a "find the spot" quiz.',
+  description:
+    'Clickable points on an image that reveal text or pictures, or a "find the spot" quiz.',
   category: 'activity',
   icon: 'hotspot',
   defaultSize: { w: 640, h: 420 },
-  createDefault: () => ({ points: 10, image: null, mode: 'explore', prompt: 'Click the correct spot.', markerColor: '', hotspots: [] }),
+  createDefault: () => ({
+    points: 10,
+    image: null,
+    mode: 'explore',
+    prompt: 'Click the correct spot.',
+    markerColor: '',
+    hotspots: [],
+  }),
   isScored: (p) => p.mode === 'find',
   fraction: (p, state) => {
     const pick = (state as HotspotState | null)?.pick;

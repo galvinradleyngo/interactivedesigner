@@ -18,5 +18,13 @@ export const buttonDef: BlockTypeDef<ButtonProps> = {
   category: 'basic',
   icon: 'button',
   defaultSize: { w: 180, h: 56 },
-  createDefault: () => ({ label: 'Next', action: 'next', page: 1, fill: '', color: '#ffffff', fontSize: 22, radius: 12 }),
+  createDefault: () => ({
+    label: 'Next',
+    action: 'next',
+    page: 1,
+    fill: '',
+    color: '#ffffff',
+    fontSize: 22,
+    radius: 12,
+  }),
 };

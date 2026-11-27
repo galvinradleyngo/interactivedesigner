@@ -27,9 +27,16 @@ export function parseProject(text: string): ProjectDoc[] {
   const obj = (data ?? {}) as Record<string, unknown>;
   let list: unknown[] = [];
   if (obj.format === 'interactivedesigner-project') {
-    const arr = Array.isArray(obj.projects) ? obj.projects : Array.isArray(obj.activities) ? obj.activities : [];
+    const arr = Array.isArray(obj.projects)
+      ? obj.projects
+      : Array.isArray(obj.activities)
+        ? obj.activities
+        : [];
     list = arr as unknown[];
-  } else if (Array.isArray(obj.pages) || (typeof obj.type === 'string' && obj.content !== undefined)) {
+  } else if (
+    Array.isArray(obj.pages) ||
+    (typeof obj.type === 'string' && obj.content !== undefined)
+  ) {
     list = [obj];
   }
   if (list.length === 0) throw new Error('No projects found in that file');

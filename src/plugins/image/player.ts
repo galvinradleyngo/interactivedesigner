@@ -7,7 +7,8 @@ export const imagePlayer: BlockPlayer<ImageProps> = {
   render({ root, props, resolveMedia, editing }) {
     const src = resolveMedia(props.src);
     if (!src) {
-      if (editing) root.append(h('div', { class: 'ap-placeholder' }, 'Image: choose a file in the panel'));
+      if (editing)
+        root.append(h('div', { class: 'ap-placeholder' }, 'Image: choose a file in the panel'));
       return;
     }
     const img = h('img', { class: 'ap-img', src, alt: props.alt, draggable: 'false' });

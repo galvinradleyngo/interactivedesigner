@@ -5,7 +5,13 @@ import { percent, type ProjectDoc, type ScormVersion } from '../schema/types';
 import { connect } from '../scorm/api';
 import { Reporter } from '../scorm/reporter';
 import { h } from './dom';
-import { applyPageBackground, applyTheme, makeMediaResolver, paintElement, type StageEnv } from './stage';
+import {
+  applyPageBackground,
+  applyTheme,
+  makeMediaResolver,
+  paintElement,
+  type StageEnv,
+} from './stage';
 
 export interface MountOptions {
   /** 'scorm' reports to an LMS if one is found; 'preview' never reports. */
@@ -28,21 +34,32 @@ interface Saved {
 
 function validSaved(x: unknown): x is Saved {
   const s = x as Saved | null;
-  return !!s && s.v === 2 && typeof s.p === 'number' && typeof s.s === 'object' && typeof s.r === 'object' && Array.isArray(s.vis);
+  return (
+    !!s &&
+    s.v === 2 &&
+    typeof s.p === 'number' &&
+    typeof s.s === 'object' &&
+    typeof s.r === 'object' &&
+    Array.isArray(s.vis)
+  );
 }
 
 export function mount(container: HTMLElement, raw: unknown, opts: MountOptions): () => void {
   const doc: ProjectDoc = migrate(raw);
   const win = opts.win ?? window;
   const resolveMedia = makeMediaResolver(doc);
-  const adapter = opts.mode === 'scorm' ? connect(opts.scormVersion ?? doc.settings.scormVersion, win) : null;
+  const adapter =
+    opts.mode === 'scorm' ? connect(opts.scormVersion ?? doc.settings.scormVersion, win) : null;
   const reporter = new Reporter(adapter, doc.settings.passingScore);
   const restored = reporter.start();
   const saved: Saved = validSaved(restored) ? restored : { v: 2, p: 0, s: {}, r: {}, vis: [] };
 
   const results: Record<string, BlockResult> = {};
-  for (const [id, [fraction, done]] of Object.entries(saved.r)) results[id] = { fraction, done: done === 1 };
-  const visited = new Set<number>(saved.vis.filter((n) => Number.isInteger(n) && n >= 0 && n < doc.pages.length));
+  for (const [id, [fraction, done]] of Object.entries(saved.r))
+    results[id] = { fraction, done: done === 1 };
+  const visited = new Set<number>(
+    saved.vis.filter((n) => Number.isInteger(n) && n >= 0 && n < doc.pages.length),
+  );
   const blockState: Record<string, unknown> = { ...saved.s };
   let page = Math.min(Math.max(opts.startPage ?? saved.p, 0), doc.pages.length - 1);
 
@@ -57,12 +74,21 @@ export function mount(container: HTMLElement, raw: unknown, opts: MountOptions):
   const next = h('button', { class: 'ap-btn ap-navbtn', type: 'button' }, 'Next');
   const nav = h('nav', { class: 'ap-nav', 'aria-label': 'Pages' }, prev, pageLabel, next);
   if (doc.pages.length < 2) nav.hidden = true;
-  container.append(h('div', { class: 'ap-shell' }, h('div', { class: 'ap-stagewrap' }, stage), nav, status));
+  container.append(
+    h('div', { class: 'ap-shell' }, h('div', { class: 'ap-stagewrap' }, stage), nav, status),
+  );
 
   const persist = () => {
     const r: Saved['r'] = {};
-    for (const [id, v] of Object.entries(results)) r[id] = [Math.round(v.fraction * 1000) / 1000, v.done ? 1 : 0];
-    reporter.saveProgress({ v: 2, p: page, s: blockState, r, vis: [...visited].sort((a, b) => a - b) } satisfies Saved);
+    for (const [id, v] of Object.entries(results))
+      r[id] = [Math.round(v.fraction * 1000) / 1000, v.done ? 1 : 0];
+    reporter.saveProgress({
+      v: 2,
+      p: page,
+      s: blockState,
+      r,
+      vis: [...visited].sort((a, b) => a - b),
+    } satisfies Saved);
   };
 
   const refreshProgress = () => {
@@ -110,7 +136,10 @@ export function mount(container: HTMLElement, raw: unknown, opts: MountOptions):
     next.disabled = i === doc.pages.length - 1;
     persist();
     refreshProgress();
-    if (focus) stage.setAttribute('tabindex', '-1'), stage.focus({ preventScroll: true });
+    if (focus) {
+      stage.setAttribute('tabindex', '-1');
+      stage.focus({ preventScroll: true });
+    }
   }
 
   prev.addEventListener('click', () => showPage(page - 1, true));

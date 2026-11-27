@@ -22,4 +22,6 @@ export const BLOCK_DEFS: BlockTypeDef[] = [
   multipleChoiceDef,
 ] as unknown as BlockTypeDef[];
 
-export const DEFS_BY_TYPE: ReadonlyMap<string, BlockTypeDef> = new Map(BLOCK_DEFS.map((d) => [d.type, d]));
+export const DEFS_BY_TYPE: ReadonlyMap<string, BlockTypeDef> = new Map(
+  BLOCK_DEFS.map((d) => [d.type, d]),
+);

@@ -53,7 +53,8 @@ export function ddFraction(p: DdProps, place: Record<string, string>): number {
 export const dragDropDef: BlockTypeDef<DdProps> = {
   type: 'dragDrop',
   label: 'Drag and drop',
-  description: 'Learners drag items onto the right zones. Good for labelling, sorting and sequencing.',
+  description:
+    'Learners drag items onto the right zones. Good for labelling, sorting and sequencing.',
   category: 'activity',
   icon: 'dragdrop',
   defaultSize: { w: 720, h: 420 },

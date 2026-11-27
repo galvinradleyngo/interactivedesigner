@@ -14,7 +14,8 @@ export const hotspotsPlayer: BlockPlayer<HotspotProps> = {
 
     const bg = resolveMedia(props.image);
     if (bg) root.append(h('img', { class: 'hs-img', src: bg, alt: '', draggable: 'false' }));
-    else if (editing) root.append(h('div', { class: 'ap-placeholder' }, 'Hotspots: choose an image in the panel'));
+    else if (editing)
+      root.append(h('div', { class: 'ap-placeholder' }, 'Hotspots: choose an image in the panel'));
     if (props.markerColor) root.style.setProperty('--marker', props.markerColor);
 
     const prompt = find ? h('div', { class: 'hs-prompt' }, props.prompt) : null;
@@ -56,7 +57,11 @@ export const hotspotsPlayer: BlockPlayer<HotspotProps> = {
           b.classList.add('seen');
           ctx.setState(st);
         }
-        const close = h('button', { class: 'hs-close', type: 'button', 'aria-label': 'Close' }, '×');
+        const close = h(
+          'button',
+          { class: 'hs-close', type: 'button', 'aria-label': 'Close' },
+          '×',
+        );
         const img = hs.image ? resolveMedia(hs.image) : '';
         popup = h(
           'div',

@@ -16,5 +16,12 @@ export const shapeDef: BlockTypeDef<ShapeProps> = {
   category: 'basic',
   icon: 'shape',
   defaultSize: { w: 240, h: 160 },
-  createDefault: () => ({ shape: 'rect', fill: '#e0e7ff', stroke: '', strokeWidth: 0, radius: 16, opacity: 1 }),
+  createDefault: () => ({
+    shape: 'rect',
+    fill: '#e0e7ff',
+    stroke: '',
+    strokeWidth: 0,
+    radius: 16,
+    opacity: 1,
+  }),
 };

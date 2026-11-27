@@ -6,7 +6,9 @@ import type { McProps, McQuestion, McState } from './type';
 
 function valid(x: unknown, n: number): x is McState {
   const s = x as McState | null;
-  return !!s && typeof s.i === 'number' && Array.isArray(s.a) && Array.isArray(s.c) && s.a.length === n;
+  return (
+    !!s && typeof s.i === 'number' && Array.isArray(s.a) && Array.isArray(s.c) && s.a.length === n
+  );
 }
 
 export const multipleChoicePlayer: BlockPlayer<McProps> = {
@@ -15,7 +17,13 @@ export const multipleChoicePlayer: BlockPlayer<McProps> = {
     const { props: content, root, editing } = ctx;
     const { showFeedback, allowRetry } = ctx.settings;
     const qs = content.questions;
-    const fresh = (): McState => ({ i: 0, a: qs.map(() => []), c: [], s: Math.floor(Math.random() * 1e9), done: false });
+    const fresh = (): McState => ({
+      i: 0,
+      a: qs.map(() => []),
+      c: [],
+      s: Math.floor(Math.random() * 1e9),
+      done: false,
+    });
     let st: McState = valid(ctx.state, qs.length) ? (ctx.state as McState) : fresh();
     const checked = new Set<number>(st.c);
     let firstRender = true;
@@ -91,7 +99,11 @@ export const multipleChoicePlayer: BlockPlayer<McProps> = {
       }
 
       const selected = () => inputs.filter((i) => i.checked).map((i) => Number(i.value));
-      const next = h('button', { class: 'ap-btn', type: 'button' }, qi === qs.length - 1 ? 'Finish' : 'Next');
+      const next = h(
+        'button',
+        { class: 'ap-btn', type: 'button' },
+        qi === qs.length - 1 ? 'Finish' : 'Next',
+      );
       const check = h('button', { class: 'ap-btn', type: 'button' }, 'Check answer');
 
       const showResult = () => {
@@ -104,7 +116,9 @@ export const multipleChoicePlayer: BlockPlayer<McProps> = {
           l.classList.toggle('ap-correct', !!o?.correct && (on || q.multi));
           l.classList.toggle('ap-wrong', on && !o?.correct);
         }
-        feedback.replaceChildren(h('strong', {}, frac === 1 ? 'Correct!' : frac > 0 ? 'Partly correct.' : 'Not quite.'));
+        feedback.replaceChildren(
+          h('strong', {}, frac === 1 ? 'Correct!' : frac > 0 ? 'Partly correct.' : 'Not quite.'),
+        );
         for (const i of sel) {
           const fb = q.options[i]?.feedback;
           if (fb) feedback.append(h('p', {}, fb));

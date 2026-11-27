@@ -22,7 +22,8 @@ export function scoredBlocks(
   for (const page of project.pages) {
     for (const el of page.elements) {
       const def = defs.get(el.type);
-      if (def?.isScored?.(el.props) && blockPoints(el.props) > 0) out.push({ id: el.id, points: blockPoints(el.props) });
+      if (def?.isScored?.(el.props) && blockPoints(el.props) > 0)
+        out.push({ id: el.id, points: blockPoints(el.props) });
     }
   }
   return out;

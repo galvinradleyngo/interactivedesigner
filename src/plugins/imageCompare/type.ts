@@ -16,5 +16,11 @@ export const imageCompareDef: BlockTypeDef<CompareProps> = {
   category: 'activity',
   icon: 'compare',
   defaultSize: { w: 640, h: 400 },
-  createDefault: () => ({ before: null, after: null, labelBefore: 'Before', labelAfter: 'After', start: 50 }),
+  createDefault: () => ({
+    before: null,
+    after: null,
+    labelBefore: 'Before',
+    labelAfter: 'After',
+    start: 50,
+  }),
 };

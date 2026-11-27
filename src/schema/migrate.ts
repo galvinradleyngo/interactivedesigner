@@ -25,7 +25,10 @@ export function migrate(input: unknown): ProjectDoc {
 
   if (v < 2 && !Array.isArray(d.pages)) {
     const type = typeof d.type === 'string' ? d.type : 'multipleChoice';
-    const content = (d.content && typeof d.content === 'object' ? d.content : {}) as Record<string, unknown>;
+    const content = (d.content && typeof d.content === 'object' ? d.content : {}) as Record<
+      string,
+      unknown
+    >;
     d.pages = [
       {
         id: newKey('p'),

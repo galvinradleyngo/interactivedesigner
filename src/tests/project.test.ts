@@ -24,7 +24,12 @@ describe('project files', () => {
     expect(() => parseProject(serializeProject([]))).toThrow(/No projects/);
   });
   it('opens v1 backups (activities[] with a single activity each)', () => {
-    const v1 = { type: 'multipleChoice', title: 'Old', content: { intro: '', questions: [] }, media: [] };
+    const v1 = {
+      type: 'multipleChoice',
+      title: 'Old',
+      content: { intro: '', questions: [] },
+      media: [],
+    };
     const file = { format: 'interactivedesigner-project', version: 1, activities: [v1] };
     const [p] = parseProject(JSON.stringify(file));
     expect(p?.title).toBe('Old');

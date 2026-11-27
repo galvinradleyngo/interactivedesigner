@@ -1,6 +1,13 @@
 import { DEFS_BY_TYPE } from '../plugins/defs';
 import type { BlockContext } from '../plugins/types';
-import { STAGE_H, STAGE_W, type Design, type Page, type ProjectDoc, type StageElement } from '../schema/types';
+import {
+  STAGE_H,
+  STAGE_W,
+  type Design,
+  type Page,
+  type ProjectDoc,
+  type StageElement,
+} from '../schema/types';
 import { getBlockPlayer } from './registry';
 
 export const FONTS: Record<Design['font'], string> = {
@@ -39,7 +46,12 @@ export function applyTheme(root: HTMLElement, design: Design): void {
 }
 
 /** Page background (colour + optional image), falling back to project design. */
-export function applyPageBackground(stage: HTMLElement, page: Page, design: Design, resolve: (r: unknown) => string): void {
+export function applyPageBackground(
+  stage: HTMLElement,
+  page: Page,
+  design: Design,
+  resolve: (r: unknown) => string,
+): void {
   stage.style.backgroundColor = page.background ?? design.background;
   const img = page.backgroundImage === undefined ? design.backgroundImage : page.backgroundImage;
   const url = img ? resolve(img) : '';

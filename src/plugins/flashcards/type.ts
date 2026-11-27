@@ -26,8 +26,16 @@ export const flashcardsDef: BlockTypeDef<FlashProps> = {
   defaultSize: { w: 480, h: 320 },
   createDefault: () => ({
     cards: [
-      { id: 'c1', front: { text: 'Front of card 1', image: null }, back: { text: 'Back of card 1', image: null } },
-      { id: 'c2', front: { text: 'Front of card 2', image: null }, back: { text: 'Back of card 2', image: null } },
+      {
+        id: 'c1',
+        front: { text: 'Front of card 1', image: null },
+        back: { text: 'Back of card 1', image: null },
+      },
+      {
+        id: 'c2',
+        front: { text: 'Front of card 2', image: null },
+        back: { text: 'Back of card 2', image: null },
+      },
     ],
     shuffle: false,
     frontColor: '#4f46e5',

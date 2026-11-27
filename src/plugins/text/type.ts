@@ -16,5 +16,12 @@ export const textDef: BlockTypeDef<TextProps> = {
   category: 'basic',
   icon: 'text',
   defaultSize: { w: 420, h: 90 },
-  createDefault: () => ({ html: '<p>Double-click to edit</p>', fontSize: 28, color: '', align: 'left', fill: '', padding: 8 }),
+  createDefault: () => ({
+    html: '<p>Double-click to edit</p>',
+    fontSize: 28,
+    color: '',
+    align: 'left',
+    fill: '',
+    padding: 8,
+  }),
 };
