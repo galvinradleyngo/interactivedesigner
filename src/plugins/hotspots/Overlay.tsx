@@ -18,6 +18,9 @@ export function HotspotsOverlay({
     <div
       className="ovl"
       ref={boxRef}
+      style={
+        props.markerColor ? ({ '--marker': props.markerColor } as React.CSSProperties) : undefined
+      }
       onPointerDown={(e) => e.target === e.currentTarget && setSub(null)}
       onDoubleClick={(e) => {
         if (e.target !== e.currentTarget) return;

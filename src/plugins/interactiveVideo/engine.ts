@@ -6,6 +6,9 @@
 export interface VideoPlayer {
   play(): void;
   pause(): void;
+  /** Length in seconds (0 until the video has loaded). */
+  getDuration(): number;
+  setMuted(muted: boolean): void;
   /** Current position in seconds. */
   getTime(): number;
   seek(seconds: number): void;
@@ -22,10 +25,14 @@ export interface VideoEvents {
 }
 
 export interface VideoEngine {
+  /**
+   * `controls: false` hides YouTube's own controls and keyboard shortcuts, so the learner cannot scrub,
+   * change the speed or skip: the page draws its own play/pause, progress and mute instead.
+   */
   create(
     host: HTMLElement,
     videoId: string,
-    options: { captions: boolean },
+    options: { captions: boolean; controls: boolean },
     events: VideoEvents,
   ): VideoPlayer;
 }
@@ -33,6 +40,9 @@ export interface VideoEngine {
 interface YTPlayer {
   playVideo(): void;
   pauseVideo(): void;
+  mute(): void;
+  unMute(): void;
+  getDuration(): number;
   getCurrentTime(): number;
   seekTo(seconds: number, allowSeekAhead: boolean): void;
   destroy(): void;
@@ -104,6 +114,8 @@ export const youtubeEngine: VideoEngine = {
           playerVars: {
             rel: 0,
             playsinline: 1,
+            controls: options.controls ? 1 : 0,
+            disablekb: options.controls ? 0 : 1, // no keyboard skipping when the learner must watch
             fs: 0, // our questions are drawn over the video, which YouTube's own full screen would hide
             iv_load_policy: 3,
             cc_load_policy: options.captions ? 1 : 0,
@@ -112,6 +124,12 @@ export const youtubeEngine: VideoEngine = {
           events: {
             onReady: () => {
               clearTimeout(failTimer);
+              // Keep the keyboard out of the video frame when the page provides the controls.
+              const frame = host.querySelector('iframe');
+              if (frame) {
+                frame.setAttribute('title', 'Video');
+                if (!options.controls) frame.tabIndex = -1;
+              }
               events.onReady();
             },
             onStateChange: (e: { data: number }) =>
@@ -138,6 +156,8 @@ export const youtubeEngine: VideoEngine = {
     return {
       play: () => yt?.playVideo(),
       pause: () => yt?.pauseVideo(),
+      getDuration: () => (yt ? yt.getDuration() || 0 : 0),
+      setMuted: (m) => (m ? yt?.mute() : yt?.unMute()),
       getTime: () => (yt ? yt.getCurrentTime() : 0),
       seek: (s) => yt?.seekTo(s, true),
       destroy: () => {

@@ -33,6 +33,14 @@ interface Props {
   peek?: Record<string, boolean>;
 }
 
+const OVERLAY_HINTS: Record<string, string> = {
+  hotspots: 'Double-click to add a hotspot · drag to move · Esc when done',
+  dragDrop:
+    'Double-click to add an item (Shift+double-click for a zone) · drag to move · handles to resize · Esc when done',
+  interactiveVideo:
+    'Click the timeline to move the video · drag a checkpoint to retime it · Esc when done',
+};
+
 const pct = (r: Rect, H: number) => ({
   left: `${(r.x / STAGE_W) * 100}%`,
   top: `${(r.y / H) * 100}%`,
@@ -231,11 +239,7 @@ export function Canvas(p: Props) {
                 sub={p.sub}
                 setSub={p.setSub}
                 boxRef={overlayBox}
-                hint={
-                  blockEl.type === 'hotspots'
-                    ? 'Double-click to add a hotspot · drag to move · Esc when done'
-                    : 'Double-click to add an item (Shift+double-click for a zone) · drag to move · handles to resize · Esc when done'
-                }
+                hint={OVERLAY_HINTS[blockEl.type]}
               />
             </div>
           )}

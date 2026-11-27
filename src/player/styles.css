@@ -292,7 +292,6 @@ body {
   inset: 0;
 }
 .hs-marker {
-  --marker: var(--primary, #4f46e5);
   position: absolute;
   width: 2em;
   height: 2em;
@@ -300,7 +299,8 @@ body {
   padding: 0;
   border-radius: 50%;
   border: 3px solid #fff;
-  background: var(--marker);
+  /* --marker is set on the block from the panel's colour; fall back to the accent colour */
+  background: var(--marker, var(--primary, #4f46e5));
   color: #fff;
   font: inherit;
   font-weight: 700;
@@ -1099,4 +1099,106 @@ body {
   background: #fff;
   color: #0f172a;
   font-size: 1.4em;
+}
+
+/* Interactive video: our own controls (no scrubbing), visible checkpoint markers */
+.iv-shield {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+.iv-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+  flex: none;
+}
+.iv-btn {
+  min-height: max(2em, 32px);
+  padding: 0.2em 0.8em;
+  border: 0;
+  border-radius: 0.5em;
+  background: var(--primary, #4f46e5);
+  color: #fff;
+  font: inherit;
+  font-size: 0.8em;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.iv-btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.iv-btn:focus-visible {
+  outline: 3px solid #f59e0b;
+  outline-offset: 2px;
+}
+.iv-track {
+  position: relative;
+  flex: 1;
+  height: 0.7em;
+  min-width: 4em;
+  border-radius: 999px;
+  background: #cbd5e1;
+}
+.iv-fill {
+  position: absolute;
+  inset: 0 auto 0 0;
+  border-radius: 999px;
+  background: var(--primary, #4f46e5);
+  pointer-events: none;
+}
+.iv-mark {
+  position: absolute;
+  top: 50%;
+  width: 1.15em;
+  height: 1.15em;
+  margin: -0.575em 0 0 -0.575em;
+  box-sizing: border-box;
+  border-radius: 50%;
+  border: 0.18em solid #fff;
+  background: #f59e0b;
+  box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.45);
+  pointer-events: auto;
+  cursor: help;
+}
+.iv-mark.p {
+  background: #0ea5e9;
+  border-radius: 0.25em;
+  transform: rotate(45deg);
+}
+.iv-mark.done {
+  background: #16a34a;
+}
+.iv-mark.next {
+  box-shadow: 0 0 0 0.2em rgba(245, 158, 11, 0.55);
+}
+.iv-time {
+  flex: none;
+  min-width: 6.5em;
+  font-size: 0.75em;
+  color: #334155;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+.iv-track-static {
+  flex: none;
+  width: min(80%, 36em);
+  margin-top: 0.8em;
+  background: #334155;
+}
+.iv-placeholder .iv-mark {
+  cursor: default;
+}
+@media (max-width: 480px) {
+  .iv-time {
+    display: none;
+  }
 }

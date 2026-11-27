@@ -197,7 +197,15 @@ function ElementTab(p: Props & { el: StageElement }) {
               onChange={(points) => p.setProps({ ...el.props, points }, `pts-${el.id}`)}
             />
           )}
-          {el.props.graded !== false && !scored && (
+          {el.props.graded !== false && block.Grading && (
+            <block.Grading
+              props={props as never}
+              onChange={
+                ((next: Record<string, unknown>, key?: string) => p.setProps(next, key)) as never
+              }
+            />
+          )}
+          {el.props.graded !== false && !scored && !block.Grading && (
             <p className="warn">Not graded yet: mark which answers are correct.</p>
           )}
         </Section>
@@ -347,6 +355,7 @@ function GradingTab(p: Props) {
                 <ul className="gradelist">
                   {rows.map(({ page, el, def }) => {
                     const on = el.props.graded !== false;
+                    const Extra = EDITOR_BLOCKS[el.type]?.Grading;
                     return (
                       <li key={el.id}>
                         <label className="check">
@@ -381,6 +390,17 @@ function GradingTab(p: Props) {
                               )
                             }
                           />
+                        )}
+                        {on && Extra && (
+                          <div className="gradeextra">
+                            <Extra
+                              props={{ ...def?.createDefault(), ...el.props } as never}
+                              onChange={
+                                ((next: Record<string, unknown>, key?: string) =>
+                                  setRow(page.id, el.id, next, key)) as never
+                              }
+                            />
+                          </div>
                         )}
                       </li>
                     );

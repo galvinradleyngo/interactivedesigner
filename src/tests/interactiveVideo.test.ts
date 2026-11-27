@@ -54,6 +54,9 @@ const props = (
   url: 'https://youtu.be/M7lc1UVf-VE',
   requireCorrect: false,
   captions: true,
+  duration: 100,
+  gradeBy: 'questions',
+  watchPercent: 90,
   checkpoints: cps,
   ...over,
 });
@@ -158,6 +161,8 @@ describe('grading', () => {
 class FakePlayer implements VideoPlayer {
   time = 0;
   paused = true;
+  duration = 100;
+  muted = false;
   calls: string[] = [];
   destroyed = false;
   constructor(public events: VideoEvents) {}
@@ -173,6 +178,13 @@ class FakePlayer implements VideoPlayer {
   }
   getTime() {
     return this.time;
+  }
+  getDuration() {
+    return this.duration;
+  }
+  setMuted(m: boolean) {
+    this.calls.push(`muted:${m}`);
+    this.muted = m;
   }
   seek(s: number) {
     this.calls.push(`seek:${s}`);
@@ -217,10 +229,21 @@ function mount(p: InteractiveVideoProps, state: unknown = null, settings = {}) {
   return { root, setState, report };
 }
 
-/** Let the player run until `time`, as it would while playing. */
+/** Let the video play at normal speed until `time` (or until it is paused, e.g. by a checkpoint). */
 async function playTo(time: number) {
   const pl = players.at(-1)!;
   await vi.advanceTimersByTimeAsync(0); // ready
+  if (pl.paused) pl.play();
+  while (!pl.paused && pl.time < time - 1e-9) {
+    pl.time = Math.min(time, pl.time + 0.2);
+    await vi.advanceTimersByTimeAsync(200);
+  }
+  await vi.advanceTimersByTimeAsync(250);
+}
+/** Move the playhead instantly, as if the learner skipped (only possible by tampering, there are no seek controls). */
+async function jumpTo(time: number) {
+  const pl = players.at(-1)!;
+  await vi.advanceTimersByTimeAsync(0);
   if (pl.paused) pl.play();
   pl.time = time;
   await vi.advanceTimersByTimeAsync(250);
@@ -264,11 +287,23 @@ describe('interactive video player', () => {
     expect(q(root, '.iv-panel')).toBeNull(); // does not come back
   });
 
-  it('pulls the learner back if they skip past an unanswered checkpoint', async () => {
+  it('undoes a jump ahead: there are no seek controls, so it is a glitch or tampering', async () => {
     const { root } = mount(props([prompt('p1', 5), prompt('p2', 20)]));
-    await playTo(60);
+    await playTo(2);
+    await jumpTo(60);
+    expect(players[0]!.calls.some((c) => c.startsWith('seek:'))).toBe(true);
+    expect(players[0]!.time).toBeLessThan(3); // back where they honestly were
+    expect(q(root, '.iv-panel')).toBeNull();
+  });
+
+  it('a long gap (background tab) that carries playback past a checkpoint pulls back to the checkpoint', async () => {
+    const { root } = mount(props([prompt('p1', 5), prompt('p2', 20)]));
+    await vi.advanceTimersByTimeAsync(0);
+    players[0]!.play();
+    vi.setSystemTime(Date.now() + 60_000); // the browser did not run the timer for a minute
+    players[0]!.time = 60; // the video kept playing meanwhile
+    await vi.advanceTimersByTimeAsync(250);
     expect(players[0]!.calls).toContain('seek:5');
-    expect(players[0]!.time).toBe(5);
     expect(q(root, '.iv-card h3')!.textContent).toBe('Note p1');
   });
 
@@ -395,5 +430,232 @@ describe('interactive video player', () => {
     const a = mount(props([], { url: 'nope' }));
     expect(a.root.children).toHaveLength(0);
     expect(players).toHaveLength(0);
+  });
+});
+
+describe('watched-enough grading', () => {
+  it('helpers: percent, clamping and the threshold', async () => {
+    const { watchedPercent, clampWatchPercent, hasWatchedEnough, watchedFraction } =
+      await import('../plugins/interactiveVideo/type');
+    expect(watchedPercent(45, 100)).toBe(45);
+    expect(watchedPercent(500, 100)).toBe(100);
+    expect(watchedPercent(10, 0)).toBe(0);
+    expect(clampWatchPercent(0)).toBe(1);
+    expect(clampWatchPercent(250)).toBe(100);
+    expect(clampWatchPercent(Number.NaN)).toBe(90);
+    expect(clampWatchPercent(89.6)).toBe(90);
+    expect(hasWatchedEnough(89, 100, 90)).toBe(false);
+    expect(hasWatchedEnough(89.6, 100, 90)).toBe(true); // half a second of allowance
+    expect(hasWatchedEnough(100, 100, 100)).toBe(true);
+    expect(hasWatchedEnough(50, 0, 90)).toBe(false);
+    expect(watchedFraction({ watchPercent: 90, duration: 100 }, { w: 95, d: 100 })).toBe(1);
+    expect(watchedFraction({ watchPercent: 90, duration: 100 }, { w: 40, d: 100 })).toBe(0);
+    expect(watchedFraction({ watchPercent: 90, duration: 100 }, null)).toBe(0);
+  });
+  it('is gradable with no questions at all, and graded by the state it was left in', () => {
+    const p = props([prompt('p', 3)], { gradeBy: 'watched', watchPercent: 80 });
+    expect(interactiveVideoDef.isScored?.(p as never)).toBe(true);
+    expect(interactiveVideoDef.fraction?.(p as never, { t: 0, a: {}, w: 85, d: 100 })).toBe(1);
+    expect(interactiveVideoDef.fraction?.(p as never, { t: 0, a: {}, w: 70, d: 100 })).toBe(0);
+    // by questions, the same activity has nothing to grade
+    expect(interactiveVideoDef.isScored?.(props([prompt('p', 3)]) as never)).toBe(false);
+  });
+  it('defaults: graded by questions, 90 percent', () => {
+    const d = interactiveVideoDef.createDefault();
+    expect(d.gradeBy).toBe('questions');
+    expect(d.watchPercent).toBe(90);
+  });
+});
+
+describe('watched-enough grading in the player', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    players = [];
+    setVideoEngine(fakeEngine);
+    document.body.replaceChildren();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    setVideoEngine(youtubeEngine);
+  });
+
+  it('gives full marks once the learner has watched the set percentage, and only then', async () => {
+    const { report } = mount(props([], { gradeBy: 'watched', watchPercent: 90 }));
+    await playTo(60);
+    expect(report).not.toHaveBeenCalled();
+    await playTo(89);
+    expect(report).not.toHaveBeenCalled();
+    await playTo(91);
+    expect(report).toHaveBeenCalledTimes(1);
+    expect(report).toHaveBeenCalledWith({ fraction: 1, done: true });
+    await playTo(100);
+    expect(report).toHaveBeenCalledTimes(1); // reported once
+  });
+
+  it('uses the percentage the author chose', async () => {
+    const { report } = mount(props([], { gradeBy: 'watched', watchPercent: 50 }));
+    await playTo(45);
+    expect(report).not.toHaveBeenCalled();
+    await playTo(52);
+    expect(report).toHaveBeenCalledWith({ fraction: 1, done: true });
+  });
+
+  it('questions still pause the video, but are not graded in this mode', async () => {
+    const { root, report } = mount(
+      props([question('q1', 10)], { gradeBy: 'watched', watchPercent: 90 }),
+    );
+    await playTo(10.1);
+    expect(q(root, '.iv-panel')).not.toBeNull(); // still gated
+    (root.querySelectorAll('input')[1] as HTMLInputElement).click(); // a wrong answer
+    btn(root, 'Check answer')!.click();
+    btn(root, 'Continue')!.click();
+    expect(report).not.toHaveBeenCalled(); // answering did not report anything
+    await playTo(95);
+    expect(report).toHaveBeenCalledTimes(1);
+    expect(report).toHaveBeenCalledWith({ fraction: 1, done: true }); // full marks despite the wrong answer
+  });
+
+  it('remembers what was watched, and a returning learner is not reported again', async () => {
+    const first = mount(props([], { gradeBy: 'watched', watchPercent: 90 }));
+    await playTo(30);
+    const state = first.setState.mock.calls.at(-1)?.[0] as VideoState | undefined;
+    await playTo(95);
+    const saved = first.setState.mock.calls.at(-1)![0] as VideoState;
+    expect(saved.w).toBeGreaterThanOrEqual(90);
+    expect(saved.d).toBe(100);
+    void state;
+    document.body.replaceChildren();
+    players = [];
+    const again = mount(props([], { gradeBy: 'watched', watchPercent: 90 }), saved);
+    await playTo(99);
+    expect(again.report).not.toHaveBeenCalled(); // already counted earlier in this attempt
+  });
+
+  it('tells a graded learner what is needed, but not an ungraded one', async () => {
+    const graded = mount(props([], { gradeBy: 'watched', watchPercent: 80 }));
+    expect(graded.root.querySelector('.iv-status')!.textContent).toContain('Watch at least 80%');
+    document.body.replaceChildren();
+    const ctxRoot = document.createElement('div');
+    document.body.append(ctxRoot);
+    const ungraded = {
+      root: ctxRoot,
+      el: { id: 'v2', type: 'interactiveVideo', x: 0, y: 0, w: 1, h: 1, props: {} },
+      props: props([], { gradeBy: 'watched', watchPercent: 80 }),
+      settings: { ...DEFAULT_SETTINGS },
+      design: DEFAULT_DESIGN,
+      editing: false,
+      hints: false,
+      graded: false,
+      resolveMedia: () => '',
+      state: null,
+      setState: vi.fn(),
+      report: vi.fn(),
+      goto: vi.fn(),
+    } as unknown as BlockContext<InteractiveVideoProps>;
+    interactiveVideoPlayer.render(ungraded);
+    expect(ctxRoot.querySelector('.iv-status')!.textContent).toBe('');
+  });
+});
+
+describe('player controls and visible checkpoints', () => {
+  beforeEach(() => {
+    vi.useFakeTimers();
+    players = [];
+    setVideoEngine(fakeEngine);
+    document.body.replaceChildren();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+    setVideoEngine(youtubeEngine);
+  });
+
+  it('draws a marker for every checkpoint on the progress bar, and ticks them off', async () => {
+    const { root } = mount(props([prompt('p1', 10), question('q1', 40)]));
+    await vi.advanceTimersByTimeAsync(0);
+    const marks = () => [...root.querySelectorAll('.iv-mark')];
+    expect(marks()).toHaveLength(2);
+    expect(marks()[0]!.className).toContain('p');
+    expect(marks()[1]!.className).toContain('q');
+    expect(marks()[0]!.className).toContain('next'); // the one coming up
+    expect((marks()[0] as HTMLElement).style.left).toBe('10%'); // 10s of a 100s video
+    expect((marks()[1] as HTMLElement).style.left).toBe('40%');
+    await playTo(10.1);
+    btn(root, 'Continue')!.click();
+    expect(marks()[0]!.className).toContain('done');
+    expect(marks()[1]!.className).toContain('next');
+  });
+
+  it('has only play/pause, progress and mute: the progress bar cannot be used to skip', async () => {
+    const { root } = mount(props([prompt('p1', 50)]));
+    expect(btn(root, '▶ Play')!.disabled).toBe(true); // not until the video is ready
+    await vi.advanceTimersByTimeAsync(0);
+    const track = q<HTMLElement>(root, '.iv-track')!;
+    expect(track.getAttribute('role')).toBe('progressbar');
+    expect(track.querySelector('input')).toBeNull();
+    track.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 90 }));
+    track.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true, clientX: 90 }));
+    expect(players[0]!.calls.some((c) => c.startsWith('seek:'))).toBe(false);
+  });
+
+  it('play, pause and mute work, and the bar shows progress', async () => {
+    const { root } = mount(props([]));
+    await vi.advanceTimersByTimeAsync(0);
+    btn(root, '▶ Play')!.click();
+    expect(players[0]!.paused).toBe(false);
+    await playTo(25.2);
+    expect(q(root, '.iv-track')!.getAttribute('aria-valuenow')).toBe('25');
+    expect(q(root, '.iv-time')!.textContent).toBe('0:25 / 1:40');
+    btn(root, '❚❚ Pause')!.click();
+    expect(players[0]!.paused).toBe(true);
+    btn(root, 'Mute')!.click();
+    expect(players[0]!.muted).toBe(true);
+    expect(btn(root, 'Unmute')).toBeDefined();
+  });
+
+  it('clicking the video plays and pauses it, but not while a question is open', async () => {
+    const { root } = mount(props([prompt('p1', 5)]));
+    await vi.advanceTimersByTimeAsync(0);
+    q<HTMLElement>(root, '.iv-shield')!.click();
+    expect(players[0]!.paused).toBe(false);
+    q<HTMLElement>(root, '.iv-shield')!.click();
+    expect(players[0]!.paused).toBe(true);
+    await playTo(5.1);
+    const before = players[0]!.calls.length;
+    q<HTMLElement>(root, '.iv-shield')!.click();
+    expect(players[0]!.calls.length).toBe(before); // ignored while the checkpoint is showing
+  });
+
+  it('asks the video player for no native controls', async () => {
+    let seen: { captions: boolean; controls: boolean } | null = null;
+    setVideoEngine({
+      create(host, id, opts, events) {
+        seen = opts;
+        return fakeEngine.create(host, id, opts, events);
+      },
+    });
+    mount(props([]));
+    expect(seen).toEqual({ captions: true, controls: false });
+  });
+
+  it('the editor placeholder shows the checkpoints without loading anything', () => {
+    const root = document.createElement('div');
+    document.body.append(root);
+    interactiveVideoPlayer.render({
+      root,
+      el: { id: 'v', type: 'interactiveVideo', x: 0, y: 0, w: 1, h: 1, props: {} },
+      props: props([prompt('p1', 10), question('q1', 40)]),
+      settings: { ...DEFAULT_SETTINGS },
+      design: DEFAULT_DESIGN,
+      editing: true,
+      hints: true,
+      graded: false,
+      resolveMedia: () => '',
+      state: null,
+      setState: vi.fn(),
+      report: vi.fn(),
+      goto: vi.fn(),
+    } as unknown as BlockContext<InteractiveVideoProps>);
+    expect(root.querySelectorAll('.iv-mark')).toHaveLength(2);
+    expect(players).toHaveLength(0); // no player, no network
   });
 });
