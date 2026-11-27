@@ -49,6 +49,8 @@ export function Inspector(p: Props) {
   const elId = p.el?.id ?? null;
   useEffect(() => setTab(elId ? 'element' : 'page'), [elId]);
 
+  // Never show the Element tab without an element.
+  const active: Tab = tab === 'element' && !p.el ? 'page' : tab;
   const tabs: { id: Tab; label: string; disabled?: boolean }[] = [
     { id: 'element', label: 'Element', disabled: !p.el },
     { id: 'page', label: 'Page' },
@@ -64,8 +66,8 @@ export function Inspector(p: Props) {
             type="button"
             role="tab"
             disabled={t.disabled}
-            aria-selected={tab === t.id}
-            className={tab === t.id ? 'on' : ''}
+            aria-selected={active === t.id}
+            className={active === t.id ? 'on' : ''}
             onClick={() => setTab(t.id)}
           >
             {t.label}
@@ -73,9 +75,9 @@ export function Inspector(p: Props) {
         ))}
       </div>
       <div className="tabpanel" role="tabpanel">
-        {tab === 'element' && p.el && <ElementTab {...p} el={p.el} />}
-        {tab === 'page' && <PageTab {...p} />}
-        {tab === 'project' && <ProjectTab {...p} />}
+        {active === 'element' && p.el && <ElementTab {...p} el={p.el} />}
+        {active === 'page' && <PageTab {...p} />}
+        {active === 'project' && <ProjectTab {...p} />}
       </div>
     </aside>
   );
@@ -133,16 +135,16 @@ function ElementTab(p: Props & { el: StageElement }) {
         </div>
         <div className="iconrow" role="group" aria-label="Arrange">
           <button type="button" onClick={() => p.onZ('front')}>
-            <Icon name="front" size={15} /> Front
+            <Icon name="front" size={15} /> To front
           </button>
           <button type="button" onClick={() => p.onZ('forward')}>
             <Icon name="up" size={15} /> Forward
           </button>
           <button type="button" onClick={() => p.onZ('backward')}>
-            <Icon name="down" size={15} /> Back
+            <Icon name="down" size={15} /> Backward
           </button>
           <button type="button" onClick={() => p.onZ('back')}>
-            <Icon name="back2" size={15} /> Bottom
+            <Icon name="back2" size={15} /> To back
           </button>
         </div>
         <div className="iconrow">

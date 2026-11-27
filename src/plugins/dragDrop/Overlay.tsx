@@ -82,7 +82,7 @@ export function DragDropOverlay({
           update(kind, id, clampRect({ ...rect, x: rect.x + dx, y: rect.y + dy }), `ddnudge-${id}`);
         }}
       >
-        <span className="ovl-label">{label}</span>
+        {kind === 'i' && <span className="ovl-label">{label}</span>}
         {on &&
           HANDLES.map((h) => (
             <span

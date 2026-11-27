@@ -169,6 +169,14 @@ describe('history', () => {
     s = historyReducer(s, { type: 'undo' });
     expect(s.present).toBe(0);
   });
+  it('applies updater functions to the latest state so same-tick edits compose', () => {
+    let s = init();
+    s = historyReducer(s, { type: 'set', value: (n: number) => n + 1, now: 0 });
+    s = historyReducer(s, { type: 'set', value: (n: number) => n + 10, now: 0 });
+    expect(s.present).toBe(11);
+    const same = historyReducer(s, { type: 'set', value: (n: number) => n, now: 1 });
+    expect(same).toBe(s); // no-op edits add no undo step
+  });
   it('does not coalesce different keys or stale edits; new edits clear redo', () => {
     let s = set(set(init(), 1, 'a', 0), 2, 'b', 10);
     expect(s.past).toHaveLength(2);

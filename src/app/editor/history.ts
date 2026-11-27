@@ -10,7 +10,7 @@ interface State<T> {
 
 type Action<T> =
   | { type: 'reset'; value: T }
-  | { type: 'set'; value: T; key?: string; now: number }
+  | { type: 'set'; value: T | ((prev: T) => T); key?: string; now: number }
   | { type: 'undo' }
   | { type: 'redo' };
 
@@ -23,10 +23,14 @@ function reducer<T>(s: State<T>, a: Action<T>): State<T> {
       return { past: [], present: a.value, future: [], lastKey: null, lastAt: 0 };
     case 'set': {
       if (s.present === null) return s;
+      // Updater functions run against the latest state, so edits made in the same tick compose.
+      const value =
+        typeof a.value === 'function' ? (a.value as (prev: T) => T)(s.present) : a.value;
+      if (value === s.present) return s;
       const same = a.key !== undefined && a.key === s.lastKey && a.now - s.lastAt < COALESCE_MS;
       // Edits with the same key in quick succession (typing, one drag) form one undo step.
       const past = same ? s.past : [...s.past, s.present].slice(-LIMIT);
-      return { past, present: a.value, future: [], lastKey: a.key ?? null, lastAt: a.now };
+      return { past, present: value, future: [], lastKey: a.key ?? null, lastAt: a.now };
     }
     case 'undo': {
       const prev = s.past[s.past.length - 1];
@@ -68,7 +72,8 @@ export function useHistory<T>() {
     canRedo: s.future.length > 0,
     reset: useCallback((value: T) => dispatch({ type: 'reset', value }), []),
     set: useCallback(
-      (value: T, key?: string) => dispatch({ type: 'set', value, key, now: Date.now() }),
+      (value: T | ((prev: T) => T), key?: string) =>
+        dispatch({ type: 'set', value, key, now: Date.now() }),
       [],
     ),
     undo: useCallback(() => dispatch({ type: 'undo' }), []),

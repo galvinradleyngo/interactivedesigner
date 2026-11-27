@@ -67,10 +67,7 @@ export function Editor() {
   /** Apply an edit to the latest project. `key` merges rapid edits into one undo step. */
   const change = useCallback(
     (fn: (d: ProjectDoc) => ProjectDoc, key?: string) => {
-      const cur = docRef.current;
-      if (!cur) return;
-      const next = fn(cur);
-      if (next !== cur) h.set(next, key);
+      h.set(fn, key);
     },
     [h],
   );

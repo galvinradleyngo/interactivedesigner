@@ -81,8 +81,12 @@ p {
   flex-wrap: wrap;
 }
 
-/* Buttons */
-button {
+[hidden] {
+  display: none !important;
+}
+
+/* Buttons. Generic styles are scoped away from the player stage so activity buttons keep their own look. */
+:where(button:not(.ap-stage button)) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -96,10 +100,10 @@ button {
   font-weight: 500;
   white-space: nowrap;
 }
-button:hover:not(:disabled) {
+button:hover:not(:disabled):not(.ap-stage button) {
   background: #f6f7fb;
 }
-button:disabled {
+:where(button:not(.ap-stage button)):disabled {
   opacity: 0.45;
   cursor: default;
 }
@@ -885,6 +889,9 @@ article.card:hover {
   padding: 10px 16px;
   background: #1b1f2a;
   color: #fff;
+}
+.modal-bar button {
+  color: var(--text);
 }
 .modal-bar .muted {
   color: #a8aec2;
