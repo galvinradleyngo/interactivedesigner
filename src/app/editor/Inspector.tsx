@@ -71,7 +71,7 @@ export function Inspector(p: Props) {
   ];
 
   return (
-    <aside className="right" aria-label="Properties">
+    <aside className={`right ${p.el ? 'has-el' : ''}`} aria-label="Properties">
       <div className="tabs" role="tablist">
         {tabs.map((t) => (
           <button
@@ -126,7 +126,7 @@ function ElementTab(p: Props & { el: StageElement }) {
         </div>
       </div>
 
-      <Section title="Position & size">
+      <Section title="Position & size" defaultOpen={false}>
         <div className="grid4">
           <Num label="X" value={el.x} onChange={(x) => pos({ x })} />
           <Num label="Y" value={el.y} onChange={(y) => pos({ y })} />

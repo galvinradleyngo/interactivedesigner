@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useState, type ReactNode } from 'react';
 
 export function Field({
   label,
@@ -164,22 +164,49 @@ export function Select<T extends string>({
   );
 }
 
+const secKey = (title: string) => `idsec:${title.replace(/\s*\(\d+\)$/, '')}`;
+const readOpen = (title: string, dflt: boolean): boolean => {
+  try {
+    const v = localStorage.getItem(secKey(title));
+    return v === null ? dflt : v === '1';
+  } catch {
+    return dflt;
+  }
+};
+
+/** An inspector section that can be folded away. The choice is remembered per section title. */
 export function Section({
   title,
   children,
   actions,
+  defaultOpen = true,
 }: {
   title: string;
   children: ReactNode;
   actions?: ReactNode;
+  defaultOpen?: boolean;
 }) {
+  const [open, setOpen] = useState(() => readOpen(title, defaultOpen));
+  const toggle = () => {
+    setOpen(!open);
+    try {
+      localStorage.setItem(secKey(title), open ? '0' : '1');
+    } catch {
+      /* not saved: still works for this visit */
+    }
+  };
   return (
-    <section className="section">
+    <section className={`section ${open ? '' : 'is-closed'}`}>
       <div className="section-head">
-        <h3>{title}</h3>
-        {actions}
+        <button type="button" className="section-toggle" aria-expanded={open} onClick={toggle}>
+          <svg viewBox="0 0 24 24" width="14" height="14" aria-hidden="true" className="chev">
+            <path d="M9 6l6 6-6 6" fill="none" stroke="currentColor" strokeWidth="2" />
+          </svg>
+          <h3>{title}</h3>
+        </button>
+        {open && actions}
       </div>
-      {children}
+      {open && children}
     </section>
   );
 }
