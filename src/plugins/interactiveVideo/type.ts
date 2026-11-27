@@ -30,6 +30,12 @@ export interface InteractiveVideoProps {
   requireCorrect: boolean;
   /** Show YouTube captions when the video starts. */
   captions: boolean;
+  /** Video length in seconds (0 = not known yet). Filled in when the video is loaded in the editor. */
+  duration: number;
+  /** What earns the points when the activity is graded. */
+  gradeBy: 'questions' | 'watched';
+  /** For gradeBy 'watched': the share of the video (percent) the learner must watch for full marks. */
+  watchPercent: number;
   checkpoints: VideoCheckpoint[];
 }
 
@@ -38,6 +44,10 @@ export interface VideoState {
   /** Last position, seconds (to resume). */
   t: number;
   a: Record<string, { sel: number[]; ok: boolean }>;
+  /** Furthest point reached by actually watching, seconds. */
+  w?: number;
+  /** Video length seen by the player, seconds. */
+  d?: number;
 }
 
 const ID = /^[A-Za-z0-9_-]{11}$/;
@@ -76,6 +86,20 @@ export function formatTime(seconds: number): string {
   return h > 0 ? `${h}:${String(m).padStart(2, '0')}:${sec}` : `${m}:${sec}`;
 }
 
+/**
+ * Length of the timeline in seconds: the real video length when known, otherwise enough room
+ * for the checkpoints so markers are still visible before the video has been loaded.
+ */
+export function timelineScale(p: Pick<InteractiveVideoProps, 'duration' | 'checkpoints'>): number {
+  const last = p.checkpoints.reduce((m, c) => Math.max(m, c.time), 0);
+  if (p.duration > 0) return Math.max(p.duration, last);
+  return Math.max(60, Math.ceil(last * 1.15));
+}
+
+/** Position on a timeline as a percentage (0..100). */
+export const timelinePercent = (time: number, scale: number): number =>
+  scale > 0 ? Math.min(100, Math.max(0, (time / scale) * 100)) : 0;
+
 export const sortedCheckpoints = (cps: readonly VideoCheckpoint[]): VideoCheckpoint[] =>
   [...cps].sort((a, b) => a.time - b.time);
 
@@ -103,6 +127,30 @@ export function videoFraction(
   return sum / qs.length;
 }
 
+/** Percent of the video watched, from the furthest point reached (0..100). */
+export function watchedPercent(furthest: number, duration: number): number {
+  return duration > 0 ? Math.min(100, (Math.max(0, furthest) / duration) * 100) : 0;
+}
+
+/** Clamp a setting typed by an author to a sensible 1..100. */
+export const clampWatchPercent = (n: number): number =>
+  Number.isFinite(n) ? Math.min(100, Math.max(1, Math.round(n))) : 90;
+
+/** Has the learner watched enough? A small allowance absorbs the last fraction of a second. */
+export function hasWatchedEnough(furthest: number, duration: number, percent: number): boolean {
+  if (duration <= 0) return false;
+  return furthest >= duration * (clampWatchPercent(percent) / 100) - 0.5;
+}
+
+/** Full marks (1) once enough of the video has been watched, otherwise 0. */
+export function watchedFraction(
+  p: Pick<InteractiveVideoProps, 'watchPercent' | 'duration'>,
+  state: Pick<VideoState, 'w' | 'd'> | null,
+): number {
+  if (!state) return 0;
+  return hasWatchedEnough(state.w ?? 0, state.d || p.duration, p.watchPercent) ? 1 : 0;
+}
+
 /** First-attempt score for one question checkpoint (0..1). */
 export const checkpointScore = (c: VideoCheckpoint, selected: readonly number[]): number =>
   scoreQuestion(asQuestion(c), selected);
@@ -121,8 +169,14 @@ export const interactiveVideoDef: BlockTypeDef<InteractiveVideoProps> = {
     url: '',
     requireCorrect: false,
     captions: true,
+    duration: 0,
+    gradeBy: 'questions',
+    watchPercent: 90,
     checkpoints: [],
   }),
-  isScored: (p) => gradableQuestions(p).length > 0,
-  fraction: (p, state) => videoFraction(p, state as VideoState | null),
+  isScored: (p) => p.gradeBy === 'watched' || gradableQuestions(p).length > 0,
+  fraction: (p, state) =>
+    p.gradeBy === 'watched'
+      ? watchedFraction(p, state as VideoState | null)
+      : videoFraction(p, state as VideoState | null),
 };

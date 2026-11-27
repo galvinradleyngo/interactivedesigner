@@ -18,7 +18,7 @@ export const flipCardPlayer: BlockPlayer<FlipCardProps> = {
           ? '0'
           : `calc(${props.radius} * var(--u))`;
 
-    const makeFace = (f: FlipFace, cls: string): HTMLElement => {
+    const makeFace = (f: FlipFace, cls: string, side: 'front' | 'back'): HTMLElement => {
       const el = h('div', { class: `fx-face ${cls}` });
       el.style.background = f.fill;
       el.style.color = f.textColor;
@@ -31,7 +31,7 @@ export const flipCardPlayer: BlockPlayer<FlipCardProps> = {
         el.append(h('img', { class: 'fx-img', src: img, alt: '', draggable: 'false' }));
       }
       if (f.text) {
-        const t = h('span', { class: 'fx-text' }, f.text);
+        const t = h('span', { class: 'fx-text', 'data-edit': `${side}.text` }, f.text);
         t.style.fontSize = `calc(${f.fontSize} * var(--u))`;
         el.append(t);
       }
@@ -40,8 +40,8 @@ export const flipCardPlayer: BlockPlayer<FlipCardProps> = {
 
     const btn = h('button', { class: `fx-card fx-${props.direction}`, type: 'button' });
     const inner = h('div', { class: 'fx-inner' });
-    const front = makeFace(props.front, 'fx-front');
-    const back = makeFace(props.back, 'fx-back');
+    const front = makeFace(props.front, 'fx-front', 'front');
+    const back = makeFace(props.back, 'fx-back', 'back');
     inner.append(front, back);
     btn.append(inner);
     root.append(btn);

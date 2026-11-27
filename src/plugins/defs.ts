@@ -1,7 +1,6 @@
 import type { BlockTypeDef } from './types';
 import { buttonDef } from './button/type';
 import { dragDropDef } from './dragDrop/type';
-import { flashcardsDef } from './flashcards/type';
 import { flipCardDef } from './flipCard/type';
 import { hotspotsDef } from './hotspots/type';
 import { imageDef } from './image/type';
@@ -20,7 +19,6 @@ export const BLOCK_DEFS: BlockTypeDef[] = [
   buttonDef,
   hotspotsDef,
   dragDropDef,
-  flashcardsDef,
   flipCardDef,
   interactiveVideoDef,
   timelineDef,

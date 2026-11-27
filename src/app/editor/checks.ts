@@ -43,9 +43,6 @@ export function checkProject(doc: ProjectDoc): Issue[] {
           if (graded && arr('items').length > 0 && !arr('items').some((i) => i.zone))
             add('has no item with a correct zone, so it is not graded');
           break;
-        case 'flashcards':
-          if (arr('cards').length === 0) add('has no cards');
-          break;
         case 'flipCard': {
           const empty = (f: unknown) => {
             const x = (f ?? {}) as Record<string, unknown>;
@@ -64,7 +61,8 @@ export function checkProject(doc: ProjectDoc): Issue[] {
             const at = formatTime(Number(c.time) || 0);
             const opts = Array.isArray(c.options) ? (c.options as Record<string, unknown>[]) : [];
             if (!stripHtml(String(c.html ?? '')).trim()) add(`question at ${at} has no text`);
-            if (!opts.some((o) => o.correct)) add(`question at ${at} has no correct answer marked`);
+            if (p.gradeBy !== 'watched' && !opts.some((o) => o.correct))
+              add(`question at ${at} has no correct answer marked`);
           }
           break;
         }

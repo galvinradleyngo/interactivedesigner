@@ -83,6 +83,8 @@ export function applyRect(
 /** Render one block into `root` using its player plugin. */
 export function renderBlock(root: HTMLElement, el: StageElement, env: StageEnv): void {
   root.replaceChildren();
+  // The editor redraws into the same container: forget colours and styles a previous version set on it.
+  root.removeAttribute('style');
   root.className = `ap-block ap-block-${el.type}`;
   const player = getBlockPlayer(el.type);
   if (!player) {

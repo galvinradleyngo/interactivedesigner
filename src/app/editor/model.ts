@@ -187,3 +187,30 @@ export function pruneMedia(doc: ProjectDoc): ProjectDoc {
   const used = mediaRefs(doc);
   return { ...doc, media: doc.media.filter((m) => used.has(m.id)) };
 }
+
+/** Set `props.a.b` from the path "a.b" without mutating the original. */
+export function setPath(
+  props: Record<string, unknown>,
+  path: string,
+  value: unknown,
+): Record<string, unknown> {
+  const [head, ...rest] = path.split('.');
+  if (!head) return props;
+  if (rest.length === 0) return { ...props, [head]: value };
+  const child = props[head];
+  const base =
+    child && typeof child === 'object' && !Array.isArray(child)
+      ? (child as Record<string, unknown>)
+      : {};
+  return { ...props, [head]: setPath(base, rest.join('.'), value) };
+}
+
+/** Read "a.b" from props (undefined if missing). */
+export function getPath(props: Record<string, unknown>, path: string): unknown {
+  return path
+    .split('.')
+    .reduce<unknown>(
+      (o, k) => (o && typeof o === 'object' ? (o as Record<string, unknown>)[k] : undefined),
+      props,
+    );
+}

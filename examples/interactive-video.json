@@ -111,7 +111,10 @@
                   }
                 ]
               }
-            ]
+            ],
+            "duration": 0,
+            "gradeBy": "questions",
+            "watchPercent": 90
           }
         }
       ]

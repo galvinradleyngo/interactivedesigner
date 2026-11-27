@@ -51,7 +51,7 @@ describe('checkProject', () => {
     expect(msgs(withBlock('imageCompare', { before: 'media:a' }))).toEqual([
       'Image comparison needs both images',
     ]);
-    expect(msgs(withBlock('flashcards', { cards: [] }))).toEqual(['Flash cards has no cards']);
+    expect(msgs(withBlock('image', {}))).toEqual(['Image has no picture']);
     expect(msgs(withBlock('image'))).toEqual(['Image has no picture']);
     expect(msgs(withBlock('multipleChoice'))).toEqual([]);
     const bad = withBlock('multipleChoice', {
@@ -79,7 +79,7 @@ describe('checkProject', () => {
     expect(checkProject(d)).toEqual([]);
   });
   it('reports where the problem is', () => {
-    const [i] = checkProject(withBlock('flashcards', { cards: [] }));
+    const [i] = checkProject(withBlock('image', {}));
     expect(i?.pageName).toBe('Page 1');
     expect(i?.elementId).toBeTruthy();
   });

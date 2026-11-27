@@ -13,6 +13,71 @@ let n = 0;
 export const newKey = (prefix: string): string =>
   `${prefix}${Date.now().toString(36)}${(n++).toString(36)}${Math.floor(Math.random() * 1296).toString(36)}`;
 
+interface LooseElement {
+  id?: string;
+  type?: string;
+  name?: string;
+  x: number;
+  y: number;
+  w: number;
+  h: number;
+  locked?: boolean;
+  hidden?: boolean;
+  props: Record<string, unknown>;
+}
+
+/**
+ * v4: the Flash cards interaction was removed (a flip card does the same job). Turn each deck into a
+ * neat grid of flip cards that fills the area the deck occupied, keeping text, pictures and colours.
+ */
+export function flashcardsToFlipCards(el: LooseElement): LooseElement[] {
+  const p = el.props as {
+    cards?: {
+      front?: { text?: string; image?: string | null };
+      back?: { text?: string; image?: string | null };
+    }[];
+    frontColor?: string;
+    backColor?: string;
+    textColor?: string;
+  };
+  const cards = Array.isArray(p.cards) ? p.cards : [];
+  const n = cards.length;
+  if (n === 0) return [];
+  const gap = 16;
+  const cols = Math.min(n, Math.max(1, Math.ceil(Math.sqrt(n * (el.w / Math.max(1, el.h))))));
+  const rows = Math.ceil(n / cols);
+  const cw = Math.max(40, (el.w - gap * (cols - 1)) / cols);
+  const ch = Math.max(40, (el.h - gap * (rows - 1)) / rows);
+  const fontSize = Math.max(14, Math.min(28, Math.round(ch / 5)));
+  const face = (f: { text?: string; image?: string | null } | undefined, fill: string) => ({
+    fill,
+    text: f?.text ?? '',
+    textColor: p.textColor ?? '#ffffff',
+    fontSize,
+    image: f?.image ?? null,
+    imageLayout: f?.image ? 'top' : 'background',
+  });
+  return cards.map((c, i) => ({
+    id: newKey('e'),
+    type: 'flipCard',
+    ...(el.name ? { name: `${el.name} ${i + 1}` } : {}),
+    x: Math.round(el.x + (i % cols) * (cw + gap)),
+    y: Math.round(el.y + Math.floor(i / cols) * (ch + gap)),
+    w: Math.round(cw),
+    h: Math.round(ch),
+    ...(el.locked ? { locked: true } : {}),
+    ...(el.hidden ? { hidden: true } : {}),
+    props: {
+      shape: 'rounded',
+      direction: 'horizontal',
+      flipBack: true,
+      radius: 18,
+      front: face(c.front, p.frontColor ?? '#4f46e5'),
+      back: face(c.back, p.backColor ?? '#0f766e'),
+    },
+  }));
+}
+
 /**
  * Upgrade a stored project to the current schema. Add one `if (v < N)` block per
  * schema bump so old files keep loading.
@@ -49,6 +114,15 @@ export function migrate(input: unknown): ProjectDoc {
     ];
     delete d.type;
     delete d.content;
+  }
+
+  if (v < 4 && Array.isArray(d.pages)) {
+    d.pages = (d.pages as { elements?: LooseElement[] }[]).map((pg) => ({
+      ...pg,
+      elements: (pg.elements ?? []).flatMap((e) =>
+        e.type === 'flashcards' ? flashcardsToFlipCards(e) : [e],
+      ),
+    }));
   }
 
   /*

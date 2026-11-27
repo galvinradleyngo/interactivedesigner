@@ -74,12 +74,11 @@ describe('which interactions can be graded', () => {
     ).toEqual(expected);
     expect([...GRADABLE_TYPES].sort()).toEqual(expected); // schema list stays in sync
   });
-  it('hotspots, flip cards, timelines, flash cards and comparisons have no grading at all', () => {
+  it('hotspots, flip cards, timelines and comparisons have no grading at all', () => {
     for (const t of [
       'hotspots',
       'flipCard',
       'timeline',
-      'flashcards',
       'imageCompare',
       'text',
       'image',
@@ -117,7 +116,6 @@ describe('activity score', () => {
       mc(10),
       drag(30),
       el('t', 'text', {}),
-      el('f', 'flashcards', {}),
       el('h', 'hotspots', { mode: 'find' }),
     );
     expect(scoredBlocks(p, DEFS_BY_TYPE)).toEqual([
@@ -214,5 +212,62 @@ describe('migrate v1 -> current', () => {
     expect(migrate(p)).toEqual(p);
     expect(migrate({ title: 'y' }).pages).toHaveLength(1);
     expect(() => migrate({ schemaVersion: 99 })).toThrow();
+  });
+});
+
+describe('migrate: flash cards become flip cards (v4)', () => {
+  it('turns a deck into a grid of flip cards that keeps text and colours', () => {
+    const doc = {
+      schemaVersion: 3,
+      title: 'Old',
+      settings: {},
+      design: {},
+      pages: [
+        {
+          id: 'p',
+          name: 'P',
+          elements: [
+            {
+              id: 'f',
+              type: 'flashcards',
+              x: 100,
+              y: 50,
+              w: 480,
+              h: 300,
+              props: {
+                frontColor: '#111111',
+                backColor: '#222222',
+                textColor: '#eeeeee',
+                cards: [
+                  {
+                    id: 'a',
+                    front: { text: 'Hi', image: null },
+                    back: { text: 'Hola', image: 'media:x' },
+                  },
+                  {
+                    id: 'b',
+                    front: { text: 'Bye', image: null },
+                    back: { text: 'Adios', image: null },
+                  },
+                ],
+              },
+            },
+          ],
+        },
+      ],
+    };
+    const out = migrate(doc as never);
+    const els = out.pages[0]!.elements;
+    expect(els.map((e) => e.type)).toEqual(['flipCard', 'flipCard']);
+    const first = els[0]!.props as {
+      front: { text: string; fill: string };
+      back: { image: string; imageLayout: string };
+    };
+    expect(first.front.text).toBe('Hi');
+    expect(first.front.fill).toBe('#111111');
+    expect(first.back.image).toBe('media:x');
+    expect(first.back.imageLayout).toBe('top');
+    expect(els[0]!.x).toBeGreaterThanOrEqual(100);
+    expect(els.every((e) => e.x + e.w <= 100 + 480 + 1 && e.y + e.h <= 50 + 300 + 1)).toBe(true);
   });
 });

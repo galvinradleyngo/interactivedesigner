@@ -822,7 +822,7 @@ article.card:hover {
   transform: translate(-50%, -50%);
   border-radius: 50%;
   border: 3px solid #fff;
-  background: var(--accent);
+  background: var(--marker, var(--accent));
   color: #fff;
   font-weight: 700;
   cursor: grab;
@@ -830,7 +830,8 @@ article.card:hover {
   touch-action: none;
 }
 .ovl-marker:hover:not(:disabled) {
-  background: var(--accent-strong);
+  background: var(--marker, var(--accent-strong));
+  filter: brightness(0.9);
 }
 .ovl-marker.on {
   outline: 3px solid #f59e0b;
@@ -1539,4 +1540,222 @@ textarea:focus {
   min-width: 3.5em;
   font-weight: 600;
   font-variant-numeric: tabular-nums;
+}
+
+/* Interactive video: on-canvas timeline editor */
+.ovl.ivo {
+  display: flex;
+  flex-direction: column;
+  background: #0b1020;
+  outline: 2px solid var(--accent);
+}
+.ivo-video {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+}
+.ivo-host,
+.ivo-host iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+}
+.ivo-msg {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 8px;
+  padding: 12px;
+  text-align: center;
+  color: #cbd5e1;
+  font-size: 12.5px;
+}
+.ivo-msg p {
+  margin: 0;
+  max-width: 46ch;
+}
+.ivo-bar {
+  flex: none;
+  display: grid;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  background: #151b30;
+}
+.ivo-track {
+  position: relative;
+  height: 14px;
+  margin: 6px 8px;
+  border-radius: 999px;
+  background: #3b4468;
+  cursor: pointer;
+  touch-action: none;
+}
+.ivo-cursor {
+  position: absolute;
+  top: -5px;
+  bottom: -5px;
+  width: 2px;
+  margin-left: -1px;
+  background: #fff;
+  pointer-events: none;
+}
+.ivo-marker {
+  position: absolute;
+  top: 50%;
+  width: 24px;
+  height: 24px;
+  min-height: 0;
+  margin: -12px 0 0 -12px;
+  padding: 0;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  background: #f59e0b;
+  color: #1b1f2a;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: grab;
+  touch-action: none;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.5);
+}
+.ivo-marker.p {
+  background: #38bdf8;
+  border-radius: 6px;
+}
+.ivo-marker.on {
+  outline: 3px solid #fff;
+  outline-offset: 2px;
+  z-index: 2;
+}
+.ivo-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.ivo-time {
+  margin-right: auto;
+  color: #cbd5e1;
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+.gradeby {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+}
+.gradeby legend {
+  padding: 0 4px;
+  font-size: 12px;
+  color: var(--muted);
+}
+.gradeextra {
+  grid-column: 1 / -1;
+}
+
+/* Floating quick-edit toolbar */
+.ed-tools {
+  position: absolute;
+  pointer-events: none;
+}
+.ed-tools-bar {
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  background: #fff;
+  border: 1px solid #cfd4e4;
+  border-radius: 10px;
+  box-shadow: 0 6px 20px rgba(20, 24, 50, 0.18);
+  pointer-events: auto;
+  white-space: nowrap;
+  z-index: 5;
+}
+.ed-tools.below .ed-tools-bar {
+  bottom: auto;
+  top: 100%;
+  margin: 12px 0 0;
+}
+.ed-tools-bar button {
+  min-height: 28px;
+  min-width: 28px;
+  padding: 2px 8px;
+  border: 0;
+  background: transparent;
+  border-radius: 6px;
+  font-size: 13px;
+  color: #1f2937;
+  display: inline-grid;
+  place-items: center;
+}
+.ed-tools-bar button:hover {
+  background: var(--accent-soft);
+}
+.ed-tools-bar button[aria-pressed='true'] {
+  background: var(--accent-soft);
+  color: var(--accent-strong);
+}
+.ed-tools-bar .tb-edit {
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+}
+.ed-tools-bar .tb-edit:hover {
+  background: var(--accent-strong);
+}
+.ed-tools-bar .danger:hover {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.tb-color {
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 700;
+}
+.tb-color:hover {
+  background: var(--accent-soft);
+}
+.tb-color input {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+}
+.tb-color .swatch {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  border: 1px solid #94a3b8;
+}
+.ed-layer.is-dropping::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border: 3px dashed var(--accent);
+  background: rgba(79, 70, 229, 0.06);
+  pointer-events: none;
+}
+.dragtip {
+  margin: 4px 2px 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+.addtile[draggable='true'],
+.actcard[draggable='true'] {
+  cursor: grab;
 }

@@ -148,6 +148,18 @@ export function Editor() {
     setSub(null);
     setEditingBlock(null);
   };
+  /** Add a block centred on a spot of the page (a palette tile was dropped there). */
+  const addElementAt = (type: string, at: { x: number; y: number }) => {
+    if (!page) return;
+    const H = stageHeight(doc?.design);
+    const el = model.newElement(type, undefined, H);
+    el.x = Math.round(Math.min(STAGE_W - 24, Math.max(0, at.x - el.w / 2)));
+    el.y = Math.round(Math.min(H - 24, Math.max(0, at.y - el.h / 2)));
+    change((d) => model.addElement(d, pgId, el));
+    setSelectedId(el.id);
+    setSub(null);
+    setEditingBlock(null);
+  };
   const deleteEl = useCallback(
     (elId: string) => {
       change((d) => model.removeElement(d, pgId, elId));
@@ -248,6 +260,71 @@ export function Editor() {
     },
     [change],
   );
+
+  const fail = (e: unknown) =>
+    setMsg(e instanceof Error ? e.message : 'Could not add that picture.');
+  /** A picture file dropped or pasted: it becomes an image element in the picture's own proportions. */
+  const addImageElement = useCallback(
+    async (file: File, at?: { x: number; y: number }) => {
+      const cur = docRef.current;
+      if (!cur) return;
+      try {
+        const m = await addImageFile(file);
+        const ratio = await new Promise<number>((res) => {
+          const im = new Image();
+          im.onload = () =>
+            res(im.naturalWidth && im.naturalHeight ? im.naturalWidth / im.naturalHeight : 1.5);
+          im.onerror = () => res(1.5);
+          im.src = m.src;
+        });
+        const H = stageHeight(cur.design);
+        const w = Math.round(Math.min(480, STAGE_W * 0.6, H * 0.7 * ratio));
+        const hgt = Math.round(w / ratio);
+        const el = model.newElement('image', undefined, H);
+        el.w = w;
+        el.h = hgt;
+        el.x = Math.round(Math.min(STAGE_W - 24, Math.max(0, (at ? at.x : STAGE_W / 2) - w / 2)));
+        el.y = Math.round(Math.min(H - 24, Math.max(0, (at ? at.y : H / 2) - hgt / 2)));
+        el.props = {
+          ...el.props,
+          src: `media:${m.id}`,
+          alt: m.name.replace(/\.[^.]+$/, ''),
+          fit: 'cover',
+        };
+        change((d) => model.addElement({ ...d, media: [...d.media, m] }, pgId, el));
+        setSelectedId(el.id);
+      } catch (e) {
+        fail(e);
+      }
+    },
+    [change, pgId],
+  );
+  const replaceImage = async (elId: string, file: File) => {
+    try {
+      const m = await addImageFile(file);
+      change((d) =>
+        model.updateProps({ ...d, media: [...d.media, m] }, pgId, elId, {
+          ...(d.pages.find((x) => x.id === pgId)?.elements.find((x) => x.id === elId)?.props ?? {}),
+          src: `media:${m.id}`,
+        }),
+      );
+    } catch (e) {
+      fail(e);
+    }
+  };
+
+  /* Pasting a picture from the clipboard puts it on the page. */
+  useEffect(() => {
+    const onPaste = (e: ClipboardEvent) => {
+      if (isTyping(e.target)) return;
+      const f = Array.from(e.clipboardData?.files ?? []).find((x) => x.type.startsWith('image/'));
+      if (!f) return;
+      e.preventDefault();
+      void addImageElement(f);
+    };
+    window.addEventListener('paste', onPaste);
+    return () => window.removeEventListener('paste', onPaste);
+  }, [addImageElement]);
 
   const setGraded = (graded: boolean) => {
     if (!doc) return;
@@ -493,6 +570,11 @@ export function Editor() {
             editingText={editingText}
             setEditingText={setEditingText}
             peek={peek}
+            onDuplicate={duplicateEl}
+            onDelete={deleteEl}
+            onReplaceImage={(id, f) => void replaceImage(id, f)}
+            onDropBlock={addElementAt}
+            onDropFile={(f, at) => void addImageElement(f, at)}
           />
           <div className="pagebar">
             {doc.pages.length > 1 ? (
