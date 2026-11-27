@@ -23,6 +23,11 @@ interface Props {
   onZ(id: string, move: 'forward' | 'backward'): void;
 }
 
+const dragType = (e: React.DragEvent, type: string) => {
+  e.dataTransfer.setData('application/x-id-block', type);
+  e.dataTransfer.effectAllowed = 'copy';
+};
+
 export function LeftPanel(p: Props) {
   const [tab, setTab] = useState<Tab>('add');
   const tabs: { id: Tab; label: string; icon: string }[] = [
@@ -52,6 +57,7 @@ export function LeftPanel(p: Props) {
 
       {tab === 'add' && (
         <div className="tabpanel" role="tabpanel">
+          <p className="dragtip">Click to add, or drag onto the page.</p>
           <h3 className="group">Elements</h3>
           <div className="addgrid">
             {basic.map((d) => (
@@ -59,6 +65,8 @@ export function LeftPanel(p: Props) {
                 key={d.type}
                 type="button"
                 className="addtile"
+                draggable
+                onDragStart={(e) => dragType(e, d.type)}
                 onClick={() => p.onAdd(d.type)}
                 title={d.description}
               >
@@ -71,7 +79,13 @@ export function LeftPanel(p: Props) {
           <ul className="actlist">
             {acts.map((d) => (
               <li key={d.type}>
-                <button type="button" className="actcard" onClick={() => p.onAdd(d.type)}>
+                <button
+                  type="button"
+                  className="actcard"
+                  draggable
+                  onDragStart={(e) => dragType(e, d.type)}
+                  onClick={() => p.onAdd(d.type)}
+                >
                   <span className="acticon">
                     <Icon name={d.icon} size={22} />
                   </span>

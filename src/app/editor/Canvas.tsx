@@ -13,7 +13,8 @@ import { Icon } from '../components/Icon';
 import { beginDrag } from './drag';
 import { ElementView } from './ElementView';
 import { HANDLES, roundRect, snapRect, snapTargets, type Handle, type Rect } from './geometry';
-import { updateElement, updateProps } from './model';
+import { SelectionToolbar } from './SelectionToolbar';
+import { getPath, reorder as reorderEl, setPath, updateElement, updateProps } from './model';
 
 interface Props {
   doc: ProjectDoc;
@@ -31,6 +32,12 @@ interface Props {
   setEditingText(id: string | null): void;
   /** Elements currently showing their alternate side (editor-only). */
   peek?: Record<string, boolean>;
+  onDuplicate(id: string): void;
+  onDelete(id: string): void;
+  onReplaceImage(id: string, file: File): void;
+  /** A palette tile (or picture file) was dropped on the page at this spot, in page units. */
+  onDropBlock(type: string, at: { x: number; y: number }): void;
+  onDropFile(file: File, at: { x: number; y: number }): void;
 }
 
 const OVERLAY_HINTS: Record<string, string> = {
@@ -56,6 +63,8 @@ export function Canvas(p: Props) {
   const overlayBox = useRef<HTMLDivElement>(null);
   const [fit, setFit] = useState(760);
   const [guides, setGuides] = useState<{ x: number[]; y: number[] } | null>(null);
+  const [editField, setEditField] = useState<{ id: string; path: string } | null>(null);
+  const [dropping, setDropping] = useState(false);
 
   useEffect(() => {
     const w = wrapRef.current;
@@ -130,10 +139,42 @@ export function Canvas(p: Props) {
     if (!el.locked) startDrag(e, el, 'move');
   };
 
-  const onElDouble = (el: StageElement) => {
+  /** Start editing whatever is natural for this element: its text, its on-canvas editor or a label. */
+  const startEdit = (el: StageElement, path?: string | null) => {
     if (el.locked) return;
     if (el.type === 'text') p.setEditingText(el.id);
     else if (EDITOR_BLOCKS[el.type]?.Overlay) p.setEditingBlock(el.id);
+    else if (path) setEditField({ id: el.id, path });
+    else {
+      const first = stageRef.current
+        ?.querySelector<HTMLElement>(`[data-id="${el.id}"] [data-edit]`)
+        ?.getAttribute('data-edit');
+      if (first) setEditField({ id: el.id, path: first });
+    }
+  };
+  const onElDouble = (e: React.MouseEvent, el: StageElement) =>
+    startEdit(el, (e.target as HTMLElement).closest('[data-edit]')?.getAttribute('data-edit'));
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Enter' || e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT|BUTTON)$/.test(t.tagName))) return;
+      if (!selected || p.editingBlock || p.editingText || editField) return;
+      e.preventDefault();
+      startEdit(selected);
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  });
+
+  const pageUnits = (e: { clientX: number; clientY: number }) => {
+    const r = stageRef.current?.getBoundingClientRect();
+    if (!r || !r.width) return { x: STAGE_W / 2, y: H / 2 };
+    return {
+      x: ((e.clientX - r.left) / r.width) * STAGE_W,
+      y: ((e.clientY - r.top) / r.height) * H,
+    };
   };
 
   const Overlay = blockEl ? EDITOR_BLOCKS[blockEl.type]?.Overlay : undefined;
@@ -157,6 +198,30 @@ export function Canvas(p: Props) {
             p.setEditingText(null);
           }}
           aria-label={`Canvas for ${page.name}`}
+          onDragOver={(e) => {
+            const t = Array.from(e.dataTransfer.types);
+            if (t.includes('application/x-id-block') || t.includes('Files')) {
+              e.preventDefault();
+              e.dataTransfer.dropEffect = 'copy';
+              setDropping(true);
+            }
+          }}
+          onDragLeave={() => setDropping(false)}
+          onDrop={(e) => {
+            setDropping(false);
+            const type = e.dataTransfer.getData('application/x-id-block');
+            const at = pageUnits(e);
+            if (type) {
+              e.preventDefault();
+              p.onDropBlock(type, at);
+              return;
+            }
+            const file = Array.from(e.dataTransfer.files).find((f) => f.type.startsWith('image/'));
+            if (file) {
+              e.preventDefault();
+              p.onDropFile(file, at);
+            }
+          }}
         >
           {visible.map((el) => (
             <div
@@ -165,13 +230,19 @@ export function Canvas(p: Props) {
               style={pct(el, H)}
               data-id={el.id}
               onPointerDown={(e) => onElDown(e, el)}
-              onDoubleClick={() => onElDouble(el)}
+              onDoubleClick={(e) => onElDouble(e, el)}
             >
               <ElementView
                 el={el}
                 doc={doc}
                 editText={p.editingText === el.id}
                 peek={!!p.peek?.[el.id]}
+                editField={editField?.id === el.id ? editField.path : null}
+                onFieldCommit={(path, text) => {
+                  setEditField(null);
+                  if (text === null || text === getPath(el.props, path)) return;
+                  p.change((d) => updateProps(d, page.id, el.id, setPath(el.props, path, text)));
+                }}
                 onTextCommit={(html) => {
                   p.setEditingText(null);
                   p.change((d) => updateProps(d, page.id, el.id, { ...el.props, html }));
@@ -182,7 +253,7 @@ export function Canvas(p: Props) {
         </div>
 
         {/* Overlay layer sits above the stage so handles are never clipped. */}
-        <div className="ed-layer">
+        <div className={`ed-layer ${dropping ? 'is-dropping' : ''}`}>
           {page.elements.length === 0 && (
             <div className="ed-empty">
               <strong>Blank canvas</strong>
@@ -220,6 +291,26 @@ export function Canvas(p: Props) {
                   />
                 ))}
             </div>
+          )}
+
+          {selected && !blockEl && !p.editingText && !editField && (
+            <SelectionToolbar
+              el={selected}
+              rect={pct(selected, H)}
+              nearTop={selected.y < 70}
+              hasEditor={!!EDITOR_BLOCKS[selected.type]?.Overlay}
+              onEdit={() => startEdit(selected)}
+              onProps={(patch, key) =>
+                p.change(
+                  (d) => updateProps(d, page.id, selected.id, { ...selected.props, ...patch }),
+                  key,
+                )
+              }
+              onDuplicate={() => p.onDuplicate(selected.id)}
+              onDelete={() => p.onDelete(selected.id)}
+              onReplaceImage={(f) => p.onReplaceImage(selected.id, f)}
+              onZ={(m) => p.change((d) => reorderEl(d, page.id, selected.id, m))}
+            />
           )}
 
           {blockEl && Overlay && (

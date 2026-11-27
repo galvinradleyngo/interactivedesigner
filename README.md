@@ -27,9 +27,9 @@ Planned next: True/False, Fill in the blanks (both gradable), open-ended questio
 ## Using the editor
 
 1. **New activity** on the dashboard opens a blank canvas. If you have a folder open, the new activity goes into it.
-2. **Add** (left panel): click an element or an interaction to place it on the page. **Pages** adds, renames, reorders and duplicates pages. **Layers** shows the stacking order and lets you hide or lock things.
+2. **Add** (left panel): click an element or an interaction to place it on the page, or **drag it onto the page** where you want it. You can also **drop or paste a picture** straight onto the page. **Pages** adds, renames, reorders and duplicates pages. **Layers** shows the stacking order and lets you hide or lock things.
 3. **Move and resize** by dragging; handles resize (hold Shift on a corner to keep proportions). Edges and centres snap to the page and to other elements (hold Alt to bypass, or switch Snap off). Arrow keys nudge by 1 (Shift: 10).
-4. **Edit text** by double-clicking it. **Edit an interaction on the canvas** by double-clicking it (or **Edit on canvas** in the panel):
+4. **Select something and a small toolbar floats next to it** with the most common edits (text size, alignment and colour, shape fill, replace picture, order, duplicate, delete), so you rarely need the side panel. **Edit text** by double-clicking it (or press Enter); button labels and flip card text work the same way. **Edit an interaction on the canvas** by double-clicking it (or **Edit on canvas** in the panel):
    - Hotspots: double-click the image to add a hotspot, drag markers to move them.
    - Drag and drop: drag items and zones into place and use the handles to resize (double-click adds an item; Shift+double-click adds a zone). Set which zone each item belongs in from the panel.
    - Flip card: tick **Show the back on the canvas** to design the back side. Copy and paste (or Duplicate) a card to make a grid of them.
