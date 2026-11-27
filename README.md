@@ -9,12 +9,30 @@ It is **local-first and works fully offline**: no accounts, no server, no databa
 
 ## What works today
 
-- **Multiple choice**: several questions per activity, single or multiple answers, per-option feedback, shuffle, retry.
-- Dashboard (create, open, rename, duplicate, delete), editor with live preview that uses the real player, autosave, per-activity design (colors, font, corner radius, background image), image upload.
-- SCORM export for 2004 4th Edition (default) and 1.2: score (raw/min/max, plus scaled for 2004), completion, pass/fail against your passing score, resume via `suspend_data`. Exported packages make no network requests.
-- Project files (`.idproject.json`) with images embedded, for backups and for sharing work between designers.
+A project is a deck of **16:9 pages**. Every project starts with one blank canvas; you add elements and activities to it and arrange them freely.
 
-Planned next: True/False, Fill in the blanks, Hotspots, Drag-and-drop, Flash cards, Image comparison, Timeline, Interactive Video (YouTube), Branching, Game map, Crossword, Word search, Memory game, with a drag-and-resize stage editor for designers.
+- **Elements:** text (type directly on the canvas), image, shape, button (go to next, previous or a specific page).
+- **Activities:** multiple choice, hotspots (explore or "find the spot" quiz), drag and drop (labelling, sorting, sequencing), flash cards, image comparison slider.
+- **Scoring:** each scored activity has a points value; the project score is the total of all of them, compared against the passing score. Hotspots in explore mode, flash cards and the comparison slider are not scored.
+- **SCORM export** for 2004 4th Edition (default) and 1.2: score (raw/min/max, plus scaled for 2004), completion, pass/fail, resume via `suspend_data`. Exported packages make no network requests.
+- Project files (`.idproject.json`) with images embedded, for backups and for sharing work between designers. Old single-activity files and saved activities open automatically (they become a one-page project).
+
+Planned next: True/False, Fill in the blanks, Timeline, Interactive Video (YouTube), Branching, Game map, Crossword, Word search, Memory game, audio, multi-select and rotation.
+
+## Using the editor
+
+1. **New blank project** on the dashboard opens a blank canvas.
+2. **Add** (left panel): click an element or activity to place it on the page. **Pages** adds, renames, reorders and duplicates pages. **Layers** shows the stacking order and lets you hide or lock things.
+3. **Move and resize** by dragging; handles resize (hold Shift on a corner to keep proportions). Edges and centres snap to the page and to other elements (hold Alt to bypass, or switch Snap off). Arrow keys nudge by 1 (Shift: 10).
+4. **Edit text** by double-clicking it. **Edit an activity on the canvas** by double-clicking it (or **Edit on canvas** in the panel):
+   - Hotspots: double-click the image to add a hotspot, drag markers to move them.
+   - Drag and drop: drag items and zones into place and use the handles to resize (double-click adds an item; Shift+double-click adds a zone). Set which zone each item belongs in from the panel.
+5. The right panel has **Element** (position, size, order, lock, activity settings and content), **Page** (name, background) and **Project** (title, passing score, SCORM version, feedback, retry, colours, font).
+6. **Preview** plays the project as a learner would. **Export SCORM** downloads the zip.
+
+Shortcuts: Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z or Ctrl+Y redo, Ctrl/Cmd+C/V copy and paste, Ctrl/Cmd+D duplicate, Delete removes, Esc deselects or leaves canvas editing, Ctrl/Cmd+S saves now.
+
+Notes: the page is a fixed 16:9 canvas that scales to fit the screen, so on a phone held upright it appears small (landscape works better). Learners can use the activities with a keyboard: drag-and-drop items can be picked up and dropped with Enter or Space.
 
 ## Using it offline
 
@@ -63,13 +81,13 @@ If Canvas doesn't offer SCORM at your institution, ask your Canvas administrator
 ## How it's built
 
 - `src/schema` versioned content schema (`schemaVersion`) with `migrate()`, plus the HTML sanitizer.
-- `src/plugins/<type>` one folder per activity type: type definition and scoring (`type.ts`, `score.ts`), React editor (`Editor.tsx`), player renderer (`player.ts`).
+- `src/plugins/<type>` one folder per block type (elements and activities): definition and scoring (`type.ts`), player renderer (`player.ts`), inspector panel (`Panel.tsx`) and an optional on-canvas editor (`Overlay.tsx`). To add a type, add a folder and register it in `plugins/defs.ts`, `player/registry.ts` and `app/registry.ts`.
 - `src/player` framework-free player, built by `vite.player.config.ts` into one `player.js` and one `player.css`. The same bundle runs the in-app preview and the exported package, and it is embedded in the app so nothing is fetched at export time.
 - `src/scorm` API discovery, SCORM 1.2 and 2004 adapters, reporter, `suspend_data`, manifest generation.
-- `src/app` the authoring app (HashRouter, IndexedDB store, project files, export with JSZip).
+- `src/app` the authoring app (HashRouter, IndexedDB store, project files, export with JSZip). `src/app/editor` holds the canvas, inspector, side panels, undo/redo history and the pure editing operations (tested).
 - `scripts/make-sw.mjs` generates the service worker that precaches the app. `vite.single.config.ts` builds the single-file version.
-- `examples/` a sample activity JSON per type (you can open these with **Open project file…**).
+- `examples/` a sample project per activity type plus a multi-page lesson using all of them (open them with **Open project file**).
 
 ### Package layout
 
-`imsmanifest.xml`, `index.html`, `player.js`, `player.css`, `content.json`, `media/…`. The activity data is also embedded in `index.html`, so it loads even from `file://`.
+`imsmanifest.xml`, `index.html`, `player.js`, `player.css`, `content.json`, `media/…`. The project data is also embedded in `index.html`, so it loads even from `file://`. Only images that are actually used are included.

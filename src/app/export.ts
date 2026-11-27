@@ -1,5 +1,6 @@
 import JSZip from 'jszip';
-import type { ActivityDoc, MediaItem } from '../schema/types';
+import type { MediaItem, ProjectDoc } from '../schema/types';
+import { pruneMedia } from './editor/model';
 import { buildManifest } from '../scorm/manifest';
 import { safeFileName } from '../scorm/names';
 
@@ -41,6 +42,7 @@ export function indexHtml(
   data: unknown,
   mode: 'scorm' | 'preview',
   inline?: { js: string; css: string },
+  startPage?: number,
 ): string {
   const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
   const head = inline
@@ -59,7 +61,7 @@ ${head}
 </head>
 <body>
 <div id="app"></div>
-<script type="application/json" id="activity-data" data-mode="${mode}">${scriptJson(data)}</script>
+<script type="application/json" id="activity-data" data-mode="${mode}"${startPage ? ` data-start="${startPage}"` : ''}>${scriptJson(data)}</script>
 ${script}
 </body>
 </html>
@@ -68,8 +70,9 @@ ${script}
 
 /** Build the SCORM zip entirely in the browser. */
 export async function buildScormZip(
-  activity: ActivityDoc,
+  project: ProjectDoc,
 ): Promise<{ blob: Blob; fileName: string }> {
+  const activity = pruneMedia(project);
   const { js, css } = await fetchPlayerAssets();
   const zip = new JSZip();
   const pkgMedia: MediaItem[] = [];
@@ -82,7 +85,7 @@ export async function buildScormZip(
     pkgMedia.push({ ...m, src: path });
   }
 
-  const data: ActivityDoc = { ...activity, media: pkgMedia };
+  const data: ProjectDoc = { ...activity, media: pkgMedia };
   const content = JSON.stringify(data, null, 2);
   zip.file('content.json', content);
   zip.file('player.js', js);

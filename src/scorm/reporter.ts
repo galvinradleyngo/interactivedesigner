@@ -3,14 +3,21 @@ import { percent } from '../schema/types';
 import type { ScormAdapter } from './api';
 import { SUSPEND_LIMIT_12, SUSPEND_LIMIT_2004, decodeSuspend, encodeSuspend } from './suspend';
 
+export interface ProgressUpdate {
+  /** Current score, or null when the project has no scored blocks. */
+  score: ScoreResult | null;
+  /** Everything required is finished. */
+  completed: boolean;
+}
+
 /**
  * Drives the SCORM adapter. With no adapter (standalone/preview) every call is a no-op
  * so the activity still runs normally.
  */
 export class Reporter {
-  private started = Date.now();
   private active = false;
   private terminated = false;
+  private started: number;
 
   constructor(
     private adapter: ScormAdapter | null,
@@ -42,21 +49,14 @@ export class Reporter {
     this.adapter.commit();
   }
 
-  /** Report a finished attempt: score, completion and pass/fail, then commit. */
-  finish(score: ScoreResult): void {
+  /** Report score so far, completion, and (once complete) pass/fail; then commit. */
+  update(p: ProgressUpdate): void {
     if (!this.active || !this.adapter) return;
     const a = this.adapter;
-    a.setScore(score.raw, 0, score.max);
-    a.setCompletion(true);
-    a.setSuccess(percent(score) >= this.passingScore);
+    if (p.score) a.setScore(p.score.raw, 0, p.score.max);
+    a.setCompletion(p.completed);
+    if (p.completed && p.score) a.setSuccess(percent(p.score) >= this.passingScore);
     a.commit();
-  }
-
-  /** Learner restarted: mark incomplete again (score stays until next finish). */
-  reset(): void {
-    if (!this.active || !this.adapter) return;
-    this.adapter.setCompletion(false);
-    this.adapter.commit();
   }
 
   terminate(): void {

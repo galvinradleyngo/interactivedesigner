@@ -1,27 +1,36 @@
 import type { ComponentType } from 'react';
-import type { ActivityTypeDef } from '../plugins/types';
-import type { ActivityDoc } from '../schema/types';
-import { multipleChoiceType } from '../plugins/multipleChoice/type';
-import { MultipleChoiceEditor } from '../plugins/multipleChoice/Editor';
+import { ButtonPanel } from '../plugins/button/Panel';
+import { DragDropOverlay } from '../plugins/dragDrop/Overlay';
+import { DragDropPanel } from '../plugins/dragDrop/Panel';
+import { FlashcardsPanel } from '../plugins/flashcards/Panel';
+import { HotspotsOverlay } from '../plugins/hotspots/Overlay';
+import { HotspotsPanel } from '../plugins/hotspots/Panel';
+import { ImagePanel } from '../plugins/image/Panel';
+import { ImageComparePanel } from '../plugins/imageCompare/Panel';
+import { MultipleChoicePanel } from '../plugins/multipleChoice/Panel';
+import { ShapePanel } from '../plugins/shape/Panel';
+import { TextPanel } from '../plugins/text/Panel';
+import type { OverlayProps, PanelProps } from './editor/types';
 
-export interface EditorProps<C = unknown> {
-  content: C;
-  onChange(content: C): void;
-  doc: ActivityDoc<C>;
-  /** Add an image to the activity's media library; resolves to a `media:<id>` ref. */
-  addImage(file: File): Promise<string>;
+/** Editor-side half of each block plugin (inspector panel + optional on-canvas overlay). */
+export interface EditorBlock {
+  Panel: ComponentType<PanelProps<never>>;
+  Overlay?: ComponentType<OverlayProps<never>>;
 }
 
-export interface EditorPlugin {
-  def: ActivityTypeDef<never, never>;
-  Editor: ComponentType<EditorProps<never>>;
-}
+const cast = <P>(c: ComponentType<PanelProps<P>>) =>
+  c as unknown as ComponentType<PanelProps<never>>;
+const castO = <P>(c: ComponentType<OverlayProps<P>>) =>
+  c as unknown as ComponentType<OverlayProps<never>>;
 
-export const editorPlugins: EditorPlugin[] = [
-  {
-    def: multipleChoiceType as unknown as ActivityTypeDef<never, never>,
-    Editor: MultipleChoiceEditor as unknown as ComponentType<EditorProps<never>>,
-  },
-];
-
-export const getEditorPlugin = (type: string) => editorPlugins.find((p) => p.def.type === type);
+export const EDITOR_BLOCKS: Record<string, EditorBlock> = {
+  text: { Panel: cast(TextPanel) },
+  image: { Panel: cast(ImagePanel) },
+  shape: { Panel: cast(ShapePanel) },
+  button: { Panel: cast(ButtonPanel) },
+  hotspots: { Panel: cast(HotspotsPanel), Overlay: castO(HotspotsOverlay) },
+  dragDrop: { Panel: cast(DragDropPanel), Overlay: castO(DragDropOverlay) },
+  flashcards: { Panel: cast(FlashcardsPanel) },
+  imageCompare: { Panel: cast(ImageComparePanel) },
+  multipleChoice: { Panel: cast(MultipleChoicePanel) },
+};

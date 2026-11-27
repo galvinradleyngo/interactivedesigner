@@ -1,37 +1,49 @@
 import { useEffect, useState } from 'react';
-import type { ActivityDoc } from '../../schema/types';
+import type { ProjectDoc } from '../../schema/types';
+import { pruneMedia } from '../editor/model';
 import { fetchPlayerAssets, indexHtml } from '../export';
+import { Icon } from './Icon';
 
-/** Live preview: the real player in a sandboxed iframe (never reports to an LMS). */
-export function Preview({ doc }: { doc: ActivityDoc }) {
-  const [assets, setAssets] = useState<{ js: string; css: string } | null>(null);
-  const [html, setHtml] = useState('');
-  const [error, setError] = useState('');
-  const [nonce, setNonce] = useState(0);
+/** Full-screen preview: the real player, never reporting to an LMS. */
+export function PreviewModal({
+  doc,
+  startPage,
+  onClose,
+}: {
+  doc: ProjectDoc;
+  startPage: number;
+  onClose(): void;
+}) {
+  const [srcDoc, setSrcDoc] = useState('');
 
   useEffect(() => {
-    fetchPlayerAssets().then(setAssets, (e: Error) => setError(e.message));
+    let live = true;
+    void fetchPlayerAssets().then(
+      (a) => live && setSrcDoc(indexHtml(doc.title, pruneMedia(doc), 'preview', a, startPage)),
+    );
+    return () => {
+      live = false;
+    };
+    // The preview is a snapshot taken when it opens; it does not follow later edits.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
-    if (!assets) return;
-    const t = setTimeout(() => {
-      const media = doc.media; // data:/https: sources work directly inside srcdoc
-      setHtml(indexHtml(doc.title, { ...doc, media }, 'preview', assets));
-    }, 400);
-    return () => clearTimeout(t);
-  }, [doc, assets, nonce]);
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && onClose();
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [onClose]);
 
-  if (error) return <p role="alert">Preview unavailable: {error}</p>;
   return (
-    <div className="preview">
-      <div className="preview-bar">
-        <strong>Live preview</strong>
-        <button type="button" onClick={() => setNonce((n) => n + 1)}>
-          Restart
+    <div className="modal" role="dialog" aria-modal="true" aria-label="Preview">
+      <div className="modal-bar">
+        <strong>Preview</strong>
+        <span className="muted">Interact as a learner would. Nothing is saved or reported.</span>
+        <button type="button" onClick={onClose} autoFocus>
+          <Icon name="close" size={16} /> Close
         </button>
       </div>
-      <iframe title="Activity preview" sandbox="allow-scripts" srcDoc={html} />
+      <iframe title="Project preview" sandbox="allow-scripts" srcDoc={srcDoc} />
     </div>
   );
 }

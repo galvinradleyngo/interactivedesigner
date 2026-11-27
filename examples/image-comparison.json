@@ -1,0 +1,71 @@
+{
+  "schemaVersion": 2,
+  "title": "Sample image comparison",
+  "settings": {
+    "passingScore": 70,
+    "scormVersion": "2004",
+    "showFeedback": true,
+    "allowRetry": true
+  },
+  "design": {
+    "primary": "#4f46e5",
+    "background": "#ffffff",
+    "text": "#1f2937",
+    "font": "system",
+    "radius": 12,
+    "backgroundImage": null
+  },
+  "pages": [
+    {
+      "id": "pg6",
+      "name": "Flood",
+      "elements": [
+        {
+          "id": "t",
+          "type": "text",
+          "x": 40,
+          "y": 24,
+          "w": 880,
+          "h": 60,
+          "props": {
+            "html": "<p><strong>Before and after</strong></p>",
+            "fontSize": 34,
+            "color": "",
+            "align": "left",
+            "fill": "",
+            "padding": 8
+          }
+        },
+        {
+          "id": "c",
+          "type": "imageCompare",
+          "x": 160,
+          "y": 100,
+          "w": 640,
+          "h": 400,
+          "props": {
+            "before": "media:b",
+            "after": "media:a",
+            "labelBefore": "Before",
+            "labelAfter": "After",
+            "start": 50
+          }
+        }
+      ]
+    }
+  ],
+  "media": [
+    {
+      "id": "b",
+      "name": "before.svg",
+      "mime": "image/svg+xml",
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgNDIwIj48cmVjdCB3aWR0aD0iNjQwIiBoZWlnaHQ9IjQyMCIgZmlsbD0iI2JhZTZmZCIvPjxyZWN0IHg9IjQwIiB5PSIyNjAiIHdpZHRoPSI1NjAiIGhlaWdodD0iMTIwIiBmaWxsPSIjODZlZmFjIi8+PGNpcmNsZSBjeD0iNTIwIiBjeT0iOTAiIHI9IjUwIiBmaWxsPSIjZmRlMDQ3Ii8+PHJlY3QgeD0iMjUwIiB5PSIxNzAiIHdpZHRoPSIxNDAiIGhlaWdodD0iMTIwIiBmaWxsPSIjYThhMjllIi8+PC9zdmc+"
+    },
+    {
+      "id": "a",
+      "name": "after.svg",
+      "mime": "image/svg+xml",
+      "src": "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA2NDAgNDIwIj48cmVjdCB3aWR0aD0iNjQwIiBoZWlnaHQ9IjQyMCIgZmlsbD0iIzk0YTNiOCIvPjxyZWN0IHg9IjQwIiB5PSIyNjAiIHdpZHRoPSI1NjAiIGhlaWdodD0iMTIwIiBmaWxsPSIjNzg3MTZjIi8+PGNpcmNsZSBjeD0iNTIwIiBjeT0iOTAiIHI9IjUwIiBmaWxsPSIjY2JkNWUxIi8+PHJlY3QgeD0iMTgwIiB5PSIxMTAiIHdpZHRoPSI4MCIgaGVpZ2h0PSIxODAiIGZpbGw9IiM2NDc0OGIiLz48cmVjdCB4PSIyODAiIHk9IjE1MCIgd2lkdGg9IjkwIiBoZWlnaHQ9IjE0MCIgZmlsbD0iIzQ3NTU2OSIvPjxyZWN0IHg9IjQwMCIgeT0iOTAiIHdpZHRoPSIxMDAiIGhlaWdodD0iMjAwIiBmaWxsPSIjMzM0MTU1Ii8+PC9zdmc+"
+    }
+  ]
+}

@@ -41,7 +41,7 @@ describe('SCORM 2004 reporting', () => {
     let t = 0;
     const r = new Reporter(new Scorm2004Adapter(m.api), 80, () => t);
     r.start();
-    r.finish({ raw: 90, max: 100 });
+    r.update({ score: { raw: 90, max: 100 }, completed: true });
     t = 65_000;
     r.terminate();
     r.terminate(); // idempotent
@@ -61,7 +61,7 @@ describe('SCORM 2004 reporting', () => {
     const m = mock2004();
     const r = new Reporter(new Scorm2004Adapter(m.api), 80);
     r.start();
-    r.finish({ raw: 79, max: 100 });
+    r.update({ score: { raw: 79, max: 100 }, completed: true });
     expect(m.store['cmi.success_status']).toBe('failed');
     expect(m.store['cmi.score.scaled']).toBe('0.79');
   });
@@ -73,7 +73,7 @@ describe('SCORM 1.2 reporting', () => {
     const r = new Reporter(new Scorm12Adapter(m.api), 80);
     r.start();
     expect(m.store['cmi.core.lesson_status']).toBe('incomplete');
-    r.finish({ raw: 50, max: 100 });
+    r.update({ score: { raw: 50, max: 100 }, completed: true });
     expect(m.store['cmi.core.score.raw']).toBe('50');
     expect(m.store['cmi.core.score.max']).toBe('100');
     expect(m.store['cmi.core.lesson_status']).toBe('failed');
@@ -85,7 +85,7 @@ describe('SCORM 1.2 reporting', () => {
     const m = mock12();
     const r = new Reporter(new Scorm12Adapter(m.api), 80);
     r.start();
-    r.finish({ raw: 100, max: 100 });
+    r.update({ score: { raw: 100, max: 100 }, completed: true });
     expect(m.store['cmi.core.lesson_status']).toBe('passed');
   });
 });
@@ -120,8 +120,7 @@ describe('standalone (no LMS)', () => {
     expect(r.start()).toBeNull();
     expect(() => {
       r.saveProgress({});
-      r.finish({ raw: 1, max: 1 });
-      r.reset();
+      r.update({ score: { raw: 1, max: 1 }, completed: true });
       r.terminate();
     }).not.toThrow();
     expect(r.connected).toBe(false);

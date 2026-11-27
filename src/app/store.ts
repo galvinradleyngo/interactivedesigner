@@ -1,17 +1,17 @@
 import { migrate } from '../schema/migrate';
-import type { ActivityDoc } from '../schema/types';
+import type { ProjectDoc } from '../schema/types';
 import { randomId } from './ids';
 
-export interface ActivitySummary {
+export interface ProjectSummary {
   id: string;
   title: string;
-  type: string;
   updatedAt: number;
+  doc: ProjectDoc;
 }
 
 interface Row {
   id: string;
-  doc: ActivityDoc;
+  doc: ProjectDoc;
   updatedAt: number;
 }
 
@@ -45,20 +45,20 @@ async function tx<T>(
 
 export const newId = (): string => randomId(20);
 
-/** Activities live in this browser's IndexedDB. Use project files for backups and sharing. */
+/** Projects live in this browser's IndexedDB. Use project files for backups and sharing. */
 export const store = {
   newId,
-  async list(): Promise<ActivitySummary[]> {
+  async list(): Promise<ProjectSummary[]> {
     const rows = await tx<Row[]>('readonly', (s) => s.getAll());
     return rows
-      .map((r) => ({ id: r.id, title: r.doc.title, type: r.doc.type, updatedAt: r.updatedAt }))
+      .map((r) => ({ id: r.id, title: r.doc.title, updatedAt: r.updatedAt, doc: migrate(r.doc) }))
       .sort((a, b) => b.updatedAt - a.updatedAt);
   },
-  async get(id: string): Promise<ActivityDoc | null> {
+  async get(id: string): Promise<ProjectDoc | null> {
     const row = await tx<Row | undefined>('readonly', (s) => s.get(id));
     return row ? migrate(row.doc) : null;
   },
-  async save(id: string, doc: ActivityDoc): Promise<void> {
+  async save(id: string, doc: ProjectDoc): Promise<void> {
     await tx('readwrite', (s) => s.put({ id, doc, updatedAt: Date.now() } satisfies Row));
   },
   async remove(id: string): Promise<void> {

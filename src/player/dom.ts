@@ -1,15 +1,24 @@
+import { sanitizeHtml } from '../schema/html';
+
 export function h<K extends keyof HTMLElementTagNameMap>(
   tag: K,
   attrs: Record<string, string> = {},
-  ...children: (Node | string | null)[]
+  ...children: (Node | string | null | undefined | false)[]
 ): HTMLElementTagNameMap[K] {
   const el = document.createElement(tag);
   for (const [k, v] of Object.entries(attrs)) el.setAttribute(k, v);
-  for (const c of children) if (c !== null) el.append(c);
+  for (const c of children) if (c !== null && c !== undefined && c !== false) el.append(c);
   return el;
 }
 
-/** Deterministic shuffle (mulberry32) so a resumed attempt keeps its option order. */
+/** Sanitized rich-text block. */
+export function rich(html: string, cls = 'ap-rich'): HTMLElement {
+  const d = h('div', { class: cls });
+  d.innerHTML = sanitizeHtml(html);
+  return d;
+}
+
+/** Deterministic shuffle (mulberry32) so a resumed attempt keeps its order. */
 export function shuffled<T>(items: readonly T[], seed: number): T[] {
   let a = seed >>> 0;
   const rnd = () => {
@@ -26,3 +35,5 @@ export function shuffled<T>(items: readonly T[], seed: number): T[] {
   }
   return out;
 }
+
+export const clamp = (n: number, lo: number, hi: number): number => Math.min(hi, Math.max(lo, n));
