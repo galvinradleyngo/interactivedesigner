@@ -44,6 +44,8 @@ export interface Design {
   /** `media:<id>` reference or null. */
   backgroundImage: string | null;
   pageShape: PageShape;
+  /** Colour around the page in the player. Empty = transparent (blends with the LMS page). */
+  surround: string;
 }
 
 export interface MediaItem {
@@ -104,6 +106,7 @@ export const DEFAULT_DESIGN: Design = {
   radius: 12,
   backgroundImage: null,
   pageShape: '16:9',
+  surround: '',
 };
 
 /** Result of scoring: raw points earned out of max. */

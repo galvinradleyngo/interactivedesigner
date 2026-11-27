@@ -46,6 +46,8 @@ export function applyTheme(root: HTMLElement, design: Design): void {
   s.setProperty('--text', design.text);
   s.setProperty('--radius', `${design.radius}px`);
   s.setProperty('--font', FONTS[design.font] ?? FONTS.system);
+  if (design.surround) s.setProperty('--surround', design.surround);
+  else s.removeProperty('--surround');
 }
 
 /** Give a stage element the project's page shape. */

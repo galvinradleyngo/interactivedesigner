@@ -16,6 +16,7 @@ A project is a deck of pages. Every project starts with one blank canvas; you ad
 - **Graded or ungraded:** tick **Ungraded** in Project settings and the whole project shows no scores, points, percentages or pass/fail, and sends no score to the LMS (the package only reports completion). You can also mark a single activity as not counting toward the score.
 - **Scoring (graded):** each scored activity has a points value; the project score is the total of all graded activities, compared against the passing score. Hotspots in explore mode, flash cards, flip cards, timelines and the comparison slider are not scored.
 - **Page shape:** widescreen 16:9 (default), 4:3, square, portrait tablet or portrait phone, so you can design for how learners will hold their device.
+- **Blends into the course page:** the area around the page is transparent by default; Project → Look has an optional "Background around the page" colour.
 - **Preview** at Desktop, Tablet or Phone size, in portrait or landscape, before you export.
 - **SCORM export** for 2004 4th Edition (default) and 1.2: score (raw/min/max, plus scaled for 2004), completion, pass/fail, resume via `suspend_data`. Exported packages make no network requests.
 - **Folders:** organize projects into folders from the dashboard, move projects between them, **duplicate** a project, and download everything in a folder in one go (as a zip of SCORM packages, or as one project file).

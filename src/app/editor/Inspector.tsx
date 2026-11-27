@@ -376,6 +376,16 @@ function ProjectTab(p: Props) {
           ]}
           onChange={(font) => setD({ font })}
         />
+        <Color
+          label="Background around the page"
+          value={d.surround ?? ''}
+          fallback="#eef0f6"
+          clearable
+          onChange={(surround) => setD({ surround }, 'surround')}
+        />
+        <p className="muted">
+          Empty means transparent, so the page blends with the course page it is shown in.
+        </p>
         <ImagePicker
           label="Background picture (all pages)"
           value={d.backgroundImage}
