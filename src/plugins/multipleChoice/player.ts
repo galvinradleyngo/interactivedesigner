@@ -47,7 +47,11 @@ export const multipleChoicePlayer: BlockPlayer<McProps> = {
       const title = h('h2', { class: 'ap-title', tabindex: '-1' }, 'Results');
       card(
         title,
-        h('p', { class: 'ap-score' }, `You scored ${percent(score)}%`),
+        h(
+          'p',
+          { class: 'ap-score' },
+          ctx.graded ? `You scored ${percent(score)}%` : 'You have finished these questions.',
+        ),
         allowRetry
           ? (() => {
               const b = h('button', { class: 'ap-btn', type: 'button' }, 'Try again');

@@ -30,6 +30,10 @@ export interface BlockContext<P = Record<string, unknown>> {
   design: Design;
   /** True inside the editor canvas: render a static look, attach no learner behavior. */
   editing: boolean;
+  /** Show author hints (e.g. "add an image") for unfinished blocks: editor and preview only. */
+  hints: boolean;
+  /** False when the project or this activity is ungraded: show no scores, points or percentages. */
+  graded: boolean;
   resolveMedia(ref: unknown): string;
   /** Previously saved state for this block (from suspend_data). */
   state: unknown;
@@ -49,4 +53,9 @@ export const DEFAULT_POINTS = 10;
 export function blockPoints(props: Record<string, unknown>): number {
   const p = Number(props.points);
   return Number.isFinite(p) && p >= 0 ? p : DEFAULT_POINTS;
+}
+
+/** Whether a block's result counts toward a score (project and activity both graded). */
+export function isGraded(settings: { graded?: boolean }, props: Record<string, unknown>): boolean {
+  return settings.graded !== false && props.graded !== false;
 }

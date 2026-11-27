@@ -14,9 +14,34 @@ export const hotspotsPlayer: BlockPlayer<HotspotProps> = {
 
     const bg = resolveMedia(props.image);
     if (bg) root.append(h('img', { class: 'hs-img', src: bg, alt: '', draggable: 'false' }));
-    else if (editing)
-      root.append(h('div', { class: 'ap-placeholder' }, 'Hotspots: choose an image in the panel'));
+    else if (ctx.hints)
+      root.append(
+        h(
+          'div',
+          { class: 'ap-placeholder' },
+          'Hotspots: choose an image in the Element panel to get started',
+        ),
+      );
+    else if (props.hotspots.length === 0) return;
     if (props.markerColor) root.style.setProperty('--marker', props.markerColor);
+    if (ctx.hints && bg && props.hotspots.length === 0)
+      root.append(
+        h(
+          'div',
+          { class: 'ap-hint-pill' },
+          'Add hotspots: double-click the image while editing it on the canvas',
+        ),
+      );
+    if (
+      ctx.hints &&
+      bg &&
+      find &&
+      props.hotspots.length > 0 &&
+      !props.hotspots.some((x) => x.correct)
+    )
+      root.append(
+        h('div', { class: 'ap-hint-pill' }, 'Mark at least one hotspot as the correct spot'),
+      );
 
     const prompt = find ? h('div', { class: 'hs-prompt' }, props.prompt) : null;
     const live = h('div', { class: 'hs-live', 'aria-live': 'polite' });

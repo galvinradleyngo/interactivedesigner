@@ -445,6 +445,242 @@
           }
         }
       ]
+    },
+    {
+      "id": "pg7",
+      "name": "Flip cards",
+      "elements": [
+        {
+          "id": "t",
+          "type": "text",
+          "x": 40,
+          "y": 24,
+          "w": 880,
+          "h": 60,
+          "props": {
+            "html": "<p><strong>Capitals: click a card</strong></p>",
+            "fontSize": 34,
+            "color": "",
+            "align": "left",
+            "fill": "",
+            "padding": 8
+          }
+        },
+        {
+          "id": "f1",
+          "type": "flipCard",
+          "x": 60,
+          "y": 130,
+          "w": 260,
+          "h": 180,
+          "props": {
+            "shape": "rounded",
+            "direction": "horizontal",
+            "flipBack": true,
+            "radius": 18,
+            "front": {
+              "fill": "#4f46e5",
+              "text": "France",
+              "textColor": "#ffffff",
+              "fontSize": 24,
+              "image": null,
+              "imageLayout": "background"
+            },
+            "back": {
+              "fill": "#0f766e",
+              "text": "Paris",
+              "textColor": "#ffffff",
+              "fontSize": 24,
+              "image": null,
+              "imageLayout": "background"
+            }
+          }
+        },
+        {
+          "id": "f2",
+          "type": "flipCard",
+          "x": 350,
+          "y": 130,
+          "w": 260,
+          "h": 180,
+          "props": {
+            "shape": "rounded",
+            "direction": "horizontal",
+            "flipBack": true,
+            "radius": 18,
+            "front": {
+              "fill": "#4f46e5",
+              "text": "Japan",
+              "textColor": "#ffffff",
+              "fontSize": 24,
+              "image": null,
+              "imageLayout": "background"
+            },
+            "back": {
+              "fill": "#0f766e",
+              "text": "Tokyo",
+              "textColor": "#ffffff",
+              "fontSize": 24,
+              "image": null,
+              "imageLayout": "background"
+            }
+          }
+        },
+        {
+          "id": "f3",
+          "type": "flipCard",
+          "x": 640,
+          "y": 130,
+          "w": 260,
+          "h": 180,
+          "props": {
+            "shape": "rounded",
+            "direction": "horizontal",
+            "flipBack": true,
+            "radius": 18,
+            "front": {
+              "fill": "#4f46e5",
+              "text": "Egypt",
+              "textColor": "#ffffff",
+              "fontSize": 24,
+              "image": null,
+              "imageLayout": "background"
+            },
+            "back": {
+              "fill": "#0f766e",
+              "text": "Cairo",
+              "textColor": "#ffffff",
+              "fontSize": 24,
+              "image": null,
+              "imageLayout": "background"
+            }
+          }
+        },
+        {
+          "id": "f4",
+          "type": "flipCard",
+          "x": 205,
+          "y": 330,
+          "w": 260,
+          "h": 180,
+          "props": {
+            "shape": "rounded",
+            "direction": "vertical",
+            "flipBack": true,
+            "radius": 18,
+            "front": {
+              "fill": "#4f46e5",
+              "text": "Brazil",
+              "textColor": "#ffffff",
+              "fontSize": 24,
+              "image": null,
+              "imageLayout": "background"
+            },
+            "back": {
+              "fill": "#0f766e",
+              "text": "Bras\u00edlia",
+              "textColor": "#ffffff",
+              "fontSize": 24,
+              "image": null,
+              "imageLayout": "background"
+            }
+          }
+        },
+        {
+          "id": "f5",
+          "type": "flipCard",
+          "x": 495,
+          "y": 330,
+          "w": 260,
+          "h": 180,
+          "props": {
+            "shape": "ellipse",
+            "direction": "horizontal",
+            "flipBack": true,
+            "radius": 18,
+            "front": {
+              "fill": "#4f46e5",
+              "text": "Kenya",
+              "textColor": "#ffffff",
+              "fontSize": 24,
+              "image": null,
+              "imageLayout": "background"
+            },
+            "back": {
+              "fill": "#0f766e",
+              "text": "Nairobi",
+              "textColor": "#ffffff",
+              "fontSize": 24,
+              "image": null,
+              "imageLayout": "background"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "pg8",
+      "name": "Timeline",
+      "elements": [
+        {
+          "id": "t",
+          "type": "text",
+          "x": 40,
+          "y": 24,
+          "w": 880,
+          "h": 60,
+          "props": {
+            "html": "<p><strong>A short history of computing</strong></p>",
+            "fontSize": 34,
+            "color": "",
+            "align": "left",
+            "fill": "",
+            "padding": 8
+          }
+        },
+        {
+          "id": "tl",
+          "type": "timeline",
+          "x": 50,
+          "y": 110,
+          "w": 860,
+          "h": 400,
+          "props": {
+            "orientation": "horizontal",
+            "color": "",
+            "events": [
+              {
+                "id": "a",
+                "date": "1837",
+                "title": "Analytical Engine",
+                "html": "<p>Charles Babbage designs a general-purpose mechanical computer.</p>",
+                "image": null
+              },
+              {
+                "id": "b",
+                "date": "1945",
+                "title": "ENIAC",
+                "html": "<p>The first large electronic general-purpose computer is completed.</p>",
+                "image": null
+              },
+              {
+                "id": "c",
+                "date": "1971",
+                "title": "Microprocessor",
+                "html": "<p>Intel releases the 4004, a computer on a chip.</p>",
+                "image": null
+              },
+              {
+                "id": "d",
+                "date": "1991",
+                "title": "The Web",
+                "html": "<p>The World Wide Web becomes publicly available.</p>",
+                "image": null
+              }
+            ]
+          }
+        }
+      ]
     }
   ],
   "media": [

@@ -41,6 +41,13 @@ const P: Record<string, string> = {
   alignbottom: 'M4 20h16M7 4v12M17 8v8',
   front: 'M8 8h12v12H8zM4 4h8v4',
   back2: 'M4 4h12v12H4zM12 20h8v-8',
+  phone: 'M8 3h8a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H8a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM11 18h2',
+  tablet: 'M5 3h14a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1zM11 18h2',
+  desktop: 'M3 4h18v12H3zM8 20h8M12 16v4',
+  rotate: 'M4 12a8 8 0 0 1 14-5l2 2M20 4v5h-5M20 12a8 8 0 0 1-14 5l-2-2M4 20v-5h5',
+  warn: 'M12 3l10 18H2zM12 10v5M12 18h.01',
+  flip: 'M5 5h6v14H5zM13 8l6-3v14l-6-3zM12 3v18',
+  timeline: 'M3 12h18M6 12V7M12 12v5M18 12V7M6 5h.01M12 19h.01M18 5h.01',
   edit: 'M4 20l4-1 11-11-3-3L5 16zM14 6l3 3',
 };
 

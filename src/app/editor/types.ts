@@ -14,6 +14,9 @@ export interface PanelProps<P> {
   sub: string | null;
   setSub(id: string | null): void;
   startBlockEdit(): void;
+  /** Editor-only preview flag (e.g. show the back of a flip card on the canvas). Never saved. */
+  peek: boolean;
+  setPeek(v: boolean): void;
 }
 
 /** On-canvas editing layer for an activity (hotspot markers, drop zones...). */

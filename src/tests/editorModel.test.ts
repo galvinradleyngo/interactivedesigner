@@ -187,3 +187,30 @@ describe('history', () => {
     expect(s.future).toHaveLength(0);
   });
 });
+
+describe('page shape', () => {
+  it('stageHeight maps shapes and defaults to widescreen', async () => {
+    const { stageHeight, PAGE_SHAPES } = await import('../schema/types');
+    expect(stageHeight(undefined)).toBe(540);
+    expect(stageHeight({ pageShape: '16:9' })).toBe(540);
+    expect(stageHeight({ pageShape: '9:16' })).toBe(1707);
+    expect(stageHeight({ pageShape: '1:1' })).toBe(960);
+    expect(PAGE_SHAPES.map((s) => s.id)).toEqual(['16:9', '4:3', '1:1', '3:4', '9:16']);
+  });
+  it('centres new elements and aligns using the page height', () => {
+    let d = base();
+    d = { ...d, design: { ...d.design, pageShape: '9:16' } };
+    const el = m.newElement('shape', undefined, 1707);
+    expect(Math.abs(el.y + el.h / 2 - 1707 / 2)).toBeLessThanOrEqual(0.5);
+    d = m.addElement(d, pid(d), { ...el, y: 0 });
+    const bottom = m.alignElement(d, pid(d), el.id, 'bottom').pages[0]!.elements[0]!;
+    expect(bottom.y).toBe(1707 - el.h);
+    const mid = m.alignElement(d, pid(d), el.id, 'middle').pages[0]!.elements[0]!;
+    expect(mid.y).toBe(Math.round((1707 - el.h) / 2));
+  });
+  it('old projects without a shape stay widescreen', async () => {
+    const { migrate } = await import('../schema/migrate');
+    const old = { ...base(), design: { primary: '#000' } };
+    expect(migrate(old).design.pageShape).toBe('16:9');
+  });
+});

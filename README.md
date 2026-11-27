@@ -9,30 +9,41 @@ It is **local-first and works fully offline**: no accounts, no server, no databa
 
 ## What works today
 
-A project is a deck of **16:9 pages**. Every project starts with one blank canvas; you add elements and activities to it and arrange them freely.
+A project is a deck of pages. Every project starts with one blank canvas; you add elements and activities to it and arrange them freely.
 
 - **Elements:** text (type directly on the canvas), image, shape, button (go to next, previous or a specific page).
-- **Activities:** multiple choice, hotspots (explore or "find the spot" quiz), drag and drop (labelling, sorting, sequencing), flash cards, image comparison slider.
-- **Scoring:** each scored activity has a points value; the project score is the total of all of them, compared against the passing score. Hotspots in explore mode, flash cards and the comparison slider are not scored.
+- **Activities:** multiple choice, hotspots (explore or "find the spot" quiz), drag and drop (labelling, sorting, sequencing), flash cards, flip card (a shape with text and/or a picture that turns over when clicked), timeline (horizontal or vertical), image comparison slider.
+- **Graded or ungraded:** tick **Ungraded** in Project settings and the whole project shows no scores, points, percentages or pass/fail, and sends no score to the LMS (the package only reports completion). You can also mark a single activity as not counting toward the score.
+- **Scoring (graded):** each scored activity has a points value; the project score is the total of all graded activities, compared against the passing score. Hotspots in explore mode, flash cards, flip cards, timelines and the comparison slider are not scored.
+- **Page shape:** widescreen 16:9 (default), 4:3, square, portrait tablet or portrait phone, so you can design for how learners will hold their device.
+- **Blends into the course page:** the area around the page is transparent by default; Project → Look has an optional "Background around the page" colour.
+- **Preview** at Desktop, Tablet or Phone size, in portrait or landscape, before you export.
 - **SCORM export** for 2004 4th Edition (default) and 1.2: score (raw/min/max, plus scaled for 2004), completion, pass/fail, resume via `suspend_data`. Exported packages make no network requests.
-- Project files (`.idproject.json`) with images embedded, for backups and for sharing work between designers. Old single-activity files and saved activities open automatically (they become a one-page project).
+- **Folders:** organize projects into folders from the dashboard, move projects between them, **duplicate** a project, and download everything in a folder in one go (as a zip of SCORM packages, or as one project file).
+- Project files (`.idproject.json`) with images embedded, for backups and for sharing work between designers (they remember which folder a project was in). Old single-activity files and saved activities open automatically (they become a one-page project).
 
-Planned next: True/False, Fill in the blanks, Timeline, Interactive Video (YouTube), Branching, Game map, Crossword, Word search, Memory game, audio, multi-select and rotation.
+Planned next: True/False, Fill in the blanks, Interactive Video (YouTube), Branching, Game map, Crossword, Word search, Memory game, audio, multi-select and rotation.
 
 ## Using the editor
 
-1. **New blank project** on the dashboard opens a blank canvas.
+1. **New blank project** on the dashboard opens a blank canvas. If you have a folder open, the new project goes into it.
 2. **Add** (left panel): click an element or activity to place it on the page. **Pages** adds, renames, reorders and duplicates pages. **Layers** shows the stacking order and lets you hide or lock things.
 3. **Move and resize** by dragging; handles resize (hold Shift on a corner to keep proportions). Edges and centres snap to the page and to other elements (hold Alt to bypass, or switch Snap off). Arrow keys nudge by 1 (Shift: 10).
 4. **Edit text** by double-clicking it. **Edit an activity on the canvas** by double-clicking it (or **Edit on canvas** in the panel):
    - Hotspots: double-click the image to add a hotspot, drag markers to move them.
    - Drag and drop: drag items and zones into place and use the handles to resize (double-click adds an item; Shift+double-click adds a zone). Set which zone each item belongs in from the panel.
-5. The right panel has **Element** (position, size, order, lock, activity settings and content), **Page** (name, background) and **Project** (title, passing score, SCORM version, feedback, retry, colours, font).
-6. **Preview** plays the project as a learner would. **Export SCORM** downloads the zip.
+   - Flip card: tick **Show the back on the canvas** to design the back side. Copy and paste (or Duplicate) a card to make a grid of them.
+5. The right panel has **Element** (position, size, order, lock, activity settings and content), **Page** (name, background) and **Project** (title, graded/ungraded, passing score, SCORM version, feedback, retry, page shape, colours, font).
+6. **to finish** (top bar) lists activities that are empty or incomplete, such as a hotspots block with no image, and jumps to each one. Previewing a block that is not set up explains what is missing instead of showing a blank slide.
+7. **Preview** plays the project as a learner would, at the device size you choose. **Duplicate** copies the project. **Export SCORM** downloads the zip.
 
 Shortcuts: Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z or Ctrl+Y redo, Ctrl/Cmd+C/V copy and paste, Ctrl/Cmd+D duplicate, Delete removes, Esc deselects or leaves canvas editing, Ctrl/Cmd+S saves now.
 
-Notes: the page is a fixed 16:9 canvas that scales to fit the screen, so on a phone held upright it appears small (landscape works better). Learners can use the activities with a keyboard: drag-and-drop items can be picked up and dropped with Enter or Space.
+### Phones and tablets
+
+The page is a fixed shape that scales to fit the screen, and the player always fits the whole page on screen. A widescreen page on an upright phone is small (the player suggests turning the phone sideways), so for phone learners choose **Portrait phone 9:16** under Project → Page shape and use the Phone preview to check. Changing the shape keeps each element's position, so resize or move things afterwards (the **to finish** list flags anything left outside the page). Controls enlarge to touch-friendly sizes on small screens, and drag-and-drop items can be picked up and dropped with a tap or the keyboard (Enter or Space).
+
+The editor itself is designed for a laptop or desktop, and works on a tablet held sideways.
 
 ## Using it offline
 
@@ -48,7 +59,7 @@ Activities are saved automatically in **this browser, on this device** (IndexedD
 
 - Each way of opening the app has its **own** storage. The hosted site, the installed app and the single HTML file do not share activities, and some browsers store file-based data separately per file location. Moving or renaming the HTML file can look like "my activities are gone".
 - Browsers can clear site data (clearing history, private windows, low disk space).
-- So **back up regularly**: **Back up all** on the dashboard downloads every activity in one file, and **Export project** downloads one. **Open project file…** loads either kind (including from another computer or another way of opening the app).
+- So **back up regularly**: **Back up all** on the dashboard downloads every project in one file; each project's download button saves just that one, and a folder's buttons download everything in it. **Open project file…** loads either kind (including from another computer or another way of opening the app).
 - To hand an activity to a colleague, send them its project file.
 
 ## Publishing the hosted version (GitHub Pages)

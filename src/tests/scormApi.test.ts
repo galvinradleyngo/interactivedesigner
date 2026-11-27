@@ -90,6 +90,27 @@ describe('SCORM 1.2 reporting', () => {
   });
 });
 
+describe('ungraded reporting (no score)', () => {
+  it('2004: reports completion only, never score or success', () => {
+    const m = mock2004();
+    const r = new Reporter(new Scorm2004Adapter(m.api), 80);
+    r.start();
+    r.update({ score: null, completed: true });
+    expect(m.store['cmi.completion_status']).toBe('completed');
+    expect(m.store['cmi.score.raw']).toBeUndefined();
+    expect(m.store['cmi.score.scaled']).toBeUndefined();
+    expect(m.store['cmi.success_status']).toBeUndefined();
+  });
+  it('1.2: status is completed, with no score fields', () => {
+    const m = mock12();
+    const r = new Reporter(new Scorm12Adapter(m.api), 80);
+    r.start();
+    r.update({ score: null, completed: true });
+    expect(m.store['cmi.core.lesson_status']).toBe('completed');
+    expect(m.store['cmi.core.score.raw']).toBeUndefined();
+  });
+});
+
 describe('suspend_data', () => {
   it('saves and restores progress', () => {
     const m = mock2004();

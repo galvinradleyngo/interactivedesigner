@@ -3,6 +3,7 @@ import { newKey } from '../../schema/migrate';
 import {
   STAGE_H,
   STAGE_W,
+  stageHeight,
   type Page,
   type ProjectDoc,
   type StageElement,
@@ -21,7 +22,11 @@ const mapPage = (doc: ProjectDoc, pageId: string, fn: (p: Page) => Page): Projec
   pages: doc.pages.map((p) => (p.id === pageId ? fn(p) : p)),
 });
 
-export function newElement(type: string, at?: { x: number; y: number }): StageElement {
+export function newElement(
+  type: string,
+  at?: { x: number; y: number },
+  stageH: number = STAGE_H,
+): StageElement {
   const def = DEFS_BY_TYPE.get(type);
   if (!def) throw new Error(`Unknown block type: ${type}`);
   const { w, h } = def.defaultSize;
@@ -29,7 +34,7 @@ export function newElement(type: string, at?: { x: number; y: number }): StageEl
     id: newKey('e'),
     type,
     x: Math.round(at ? at.x : (STAGE_W - w) / 2),
-    y: Math.round(at ? at.y : (STAGE_H - h) / 2),
+    y: Math.round(at ? at.y : (stageH - h) / 2),
     w,
     h,
     props: clone(def.createDefault()) as Record<string, unknown>,
@@ -74,7 +79,7 @@ export function duplicateElement(
     ...clone(src),
     id: newKey('e'),
     x: Math.min(src.x + offset, STAGE_W - 20),
-    y: Math.min(src.y + offset, STAGE_H - 20),
+    y: Math.min(src.y + offset, stageHeight(doc.design) - 20),
   };
   if (copy.name) copy.name = `${copy.name} copy`;
   return { doc: addElement(doc, pageId, copy), id: copy.id };
@@ -105,6 +110,7 @@ export type AlignTo = 'left' | 'center' | 'right' | 'top' | 'middle' | 'bottom';
 export function alignElement(doc: ProjectDoc, pageId: string, id: string, to: AlignTo): ProjectDoc {
   const el = doc.pages.find((p) => p.id === pageId)?.elements.find((e) => e.id === id);
   if (!el) return doc;
+  const H = stageHeight(doc.design);
   const patch: Partial<StageElement> =
     to === 'left'
       ? { x: 0 }
@@ -115,8 +121,8 @@ export function alignElement(doc: ProjectDoc, pageId: string, id: string, to: Al
           : to === 'top'
             ? { y: 0 }
             : to === 'middle'
-              ? { y: Math.round((STAGE_H - el.h) / 2) }
-              : { y: STAGE_H - el.h };
+              ? { y: Math.round((H - el.h) / 2) }
+              : { y: H - el.h };
   return updateElement(doc, pageId, id, patch);
 }
 

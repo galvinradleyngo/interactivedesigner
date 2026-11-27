@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { DEFS_BY_TYPE } from '../../plugins/defs';
 import { blockPoints } from '../../plugins/types';
+import { PAGE_SHAPES, type PageShape } from '../../schema/types';
 import type {
   FontChoice,
   Page,
@@ -29,6 +30,8 @@ interface Props {
   sub: string | null;
   setSub(id: string | null): void;
   startBlockEdit(): void;
+  peek: boolean;
+  setPeek(v: boolean): void;
   onAlign(to: AlignTo): void;
   onZ(m: ZMove): void;
   onDuplicate(): void;
@@ -169,18 +172,35 @@ function ElementTab(p: Props & { el: StageElement }) {
 
       {scorable && (
         <Section title="Scoring">
-          <Num
-            label="Points"
-            value={blockPoints(el.props)}
-            min={0}
-            max={1000}
-            onChange={(points) => p.setProps({ ...el.props, points }, `pts-${el.id}`)}
-          />
-          <p className={scored ? 'muted' : 'warn'}>
-            {scored
-              ? 'Counts toward the project score (the total of all scored activities).'
-              : 'Not scored right now. Change the mode or mark correct answers to score it.'}
-          </p>
+          {doc.settings.graded === false ? (
+            <p className="muted">
+              This project is ungraded, so no scores or points are shown or reported.
+            </p>
+          ) : (
+            <>
+              <Check
+                label="Counts toward the score"
+                checked={el.props.graded !== false}
+                onChange={(graded) => p.setProps({ ...el.props, graded })}
+              />
+              {el.props.graded !== false && (
+                <Num
+                  label="Points"
+                  value={blockPoints(el.props)}
+                  min={0}
+                  max={1000}
+                  onChange={(points) => p.setProps({ ...el.props, points }, `pts-${el.id}`)}
+                />
+              )}
+              <p className={scored && el.props.graded !== false ? 'muted' : 'warn'}>
+                {el.props.graded === false
+                  ? 'Ungraded: learners can try it, but it adds nothing to the score and shows no marks.'
+                  : scored
+                    ? 'Counts toward the project score (the total of all graded activities).'
+                    : 'Not scored right now. Change the mode or mark correct answers to score it.'}
+              </p>
+            </>
+          )}
         </Section>
       )}
 
@@ -194,6 +214,8 @@ function ElementTab(p: Props & { el: StageElement }) {
         sub={p.sub}
         setSub={p.setSub}
         startBlockEdit={p.startBlockEdit}
+        peek={p.peek}
+        setPeek={p.setPeek}
       />
     </>
   );
@@ -262,14 +284,26 @@ function ProjectTab(p: Props) {
         />
       </Section>
       <Section title="Scoring & SCORM">
-        <Num
-          label="Passing score"
-          value={s.passingScore}
-          min={0}
-          max={100}
-          suffix="%"
-          onChange={(passingScore) => setS({ passingScore }, 'pass')}
+        <Check
+          label="Ungraded (practice only)"
+          checked={s.graded === false}
+          onChange={(ungraded) => setS({ graded: !ungraded })}
         />
+        <p className="muted">
+          {s.graded === false
+            ? 'No scores, points, percentages or pass/fail are shown, and no score is sent to the LMS (the package only reports completion).'
+            : 'Graded: the score is the total of every graded activity’s points.'}
+        </p>
+        {s.graded !== false && (
+          <Num
+            label="Passing score"
+            value={s.passingScore}
+            min={0}
+            max={100}
+            suffix="%"
+            onChange={(passingScore) => setS({ passingScore }, 'pass')}
+          />
+        )}
         <Select<ScormVersion>
           label="SCORM version"
           value={s.scormVersion}
@@ -289,7 +323,19 @@ function ProjectTab(p: Props) {
           checked={s.allowRetry}
           onChange={(allowRetry) => setS({ allowRetry })}
         />
-        <p className="muted">The score is the total of every scored activity’s points.</p>
+      </Section>
+      <Section title="Page shape">
+        <Select<PageShape>
+          label="Shape of every page"
+          value={d.pageShape ?? '16:9'}
+          options={PAGE_SHAPES.map((s) => ({ value: s.id, label: `${s.label} (${s.hint})` }))}
+          onChange={(pageShape) => setD({ pageShape })}
+        />
+        <p className="muted">
+          Pick the shape that matches how learners will hold their device, then use Preview to try
+          Desktop, Tablet and Phone. Changing it keeps each element’s position, so check that
+          nothing ended up off the page.
+        </p>
       </Section>
       <Section title="Look">
         <div className="grid2">
@@ -330,6 +376,16 @@ function ProjectTab(p: Props) {
           ]}
           onChange={(font) => setD({ font })}
         />
+        <Color
+          label="Background around the page"
+          value={d.surround ?? ''}
+          fallback="#eef0f6"
+          clearable
+          onChange={(surround) => setD({ surround }, 'surround')}
+        />
+        <p className="muted">
+          Empty means transparent, so the page blends with the course page it is shown in.
+        </p>
         <ImagePicker
           label="Background picture (all pages)"
           value={d.backgroundImage}

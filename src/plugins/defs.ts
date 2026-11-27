@@ -2,12 +2,14 @@ import type { BlockTypeDef } from './types';
 import { buttonDef } from './button/type';
 import { dragDropDef } from './dragDrop/type';
 import { flashcardsDef } from './flashcards/type';
+import { flipCardDef } from './flipCard/type';
 import { hotspotsDef } from './hotspots/type';
 import { imageDef } from './image/type';
 import { imageCompareDef } from './imageCompare/type';
 import { multipleChoiceDef } from './multipleChoice/type';
 import { shapeDef } from './shape/type';
 import { textDef } from './text/type';
+import { timelineDef } from './timeline/type';
 
 /** Framework-free block definitions (shared by the player, scoring and the editor). */
 export const BLOCK_DEFS: BlockTypeDef[] = [
@@ -18,6 +20,8 @@ export const BLOCK_DEFS: BlockTypeDef[] = [
   hotspotsDef,
   dragDropDef,
   flashcardsDef,
+  flipCardDef,
+  timelineDef,
   imageCompareDef,
   multipleChoiceDef,
 ] as unknown as BlockTypeDef[];
