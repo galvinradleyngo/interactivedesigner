@@ -5,6 +5,7 @@ import { newProject } from '../../schema/migrate';
 import type { ProjectDoc } from '../../schema/types';
 import { Icon } from '../components/Icon';
 import { PageThumb } from '../components/PageThumb';
+import { StorageNotice } from '../components/StorageNotice';
 import { buildScormZip, download } from '../export';
 import { packFolder } from '../folderExport';
 import { parseProjectFile, projectFileName, serializeProject } from '../project';
@@ -364,6 +365,7 @@ export function Dashboard() {
               ? 'Projects in this folder. New projects you create here are added to it.'
               : 'Start with a blank canvas, add activities and elements, then export a SCORM package for Canvas.'}
           </p>
+          <StorageNotice />
           {busy && (
             <p role="status" className="banner">
               {busy}

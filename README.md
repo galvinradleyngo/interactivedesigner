@@ -61,6 +61,7 @@ Activities are saved automatically in **this browser, on this device** (IndexedD
 - Browsers can clear site data (clearing history, private windows, low disk space).
 - So **back up regularly**: **Back up all** on the dashboard downloads every project in one file; each project's download button saves just that one, and a folder's buttons download everything in it. **Open project file…** loads either kind (including from another computer or another way of opening the app).
 - To hand an activity to a colleague, send them its project file.
+- If the dashboard stays on "Loading…" and shows "Waiting for another tab", an older copy of the app is open in another tab or window and is holding the saved projects while the app upgrades its storage. Close the other tabs (including any installed app window) and the page continues by itself. Nothing is lost.
 
 ## Publishing the hosted version (GitHub Pages)
 

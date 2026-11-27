@@ -10,6 +10,7 @@ import {
 import { newKey } from '../../schema/migrate';
 import { Icon } from '../components/Icon';
 import { PreviewModal } from '../components/Preview';
+import { StorageNotice } from '../components/StorageNotice';
 import { Canvas } from '../editor/Canvas';
 import { checkProject, type Issue } from '../editor/checks';
 import { IssuesMenu } from '../editor/IssuesMenu';
@@ -280,7 +281,13 @@ export function Editor() {
       </p>
     );
   if (loadError) return <p className="page error">{loadError}</p>;
-  if (!doc || !page) return <p className="page">Loading…</p>;
+  if (!doc || !page)
+    return (
+      <div className="page">
+        <StorageNotice />
+        <p>Loading…</p>
+      </div>
+    );
 
   const saveLabel = {
     saved: 'All changes saved',
