@@ -1,10 +1,8 @@
-import { getDownloadURL, getStorage, ref, uploadBytes } from 'firebase/storage';
 import type { MediaItem } from '../schema/types';
-import { getApp, useStorage } from './firebase';
+import { randomId } from './ids';
 
-/** Firestore docs max out at 1MB; keep each inline image well under that. */
-const MAX_INLINE_CHARS = 750_000;
-const MAX_DIM = 1280;
+const MAX_INLINE_CHARS = 1_500_000;
+const MAX_DIM = 1600;
 
 function loadImage(file: Blob): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
@@ -30,11 +28,11 @@ const readDataUrl = (f: Blob): Promise<string> =>
     r.readAsDataURL(f);
   });
 
-/** Downscale and compress an image until it fits the inline limit. */
+/** Downscale and compress an image until it fits the embed limit. */
 export async function shrinkImage(file: File): Promise<{ src: string; mime: string }> {
   if (file.type === 'image/svg+xml') {
     const src = await readDataUrl(file);
-    if (src.length > MAX_INLINE_CHARS) throw new Error('SVG is too large (max ~500 KB)');
+    if (src.length > MAX_INLINE_CHARS) throw new Error('SVG is too large (max ~1 MB)');
     return { src, mime: file.type };
   }
   const img = await loadImage(file);
@@ -46,7 +44,7 @@ export async function shrinkImage(file: File): Promise<{ src: string; mime: stri
     c.width = Math.max(1, Math.round(img.naturalWidth * scale));
     c.height = Math.max(1, Math.round(img.naturalHeight * scale));
     c.getContext('2d')?.drawImage(img, 0, 0, c.width, c.height);
-    const quality = Math.max(0.5, 0.85 - attempt * 0.08);
+    const quality = Math.max(0.5, 0.88 - attempt * 0.08);
     const mime = keepAlpha && attempt < 2 ? 'image/webp' : 'image/jpeg';
     const src = c.toDataURL(mime, quality);
     if (src.length <= MAX_INLINE_CHARS) return { src, mime: src.slice(5, src.indexOf(';')) };
@@ -55,16 +53,10 @@ export async function shrinkImage(file: File): Promise<{ src: string; mime: stri
   throw new Error('Image is too large even after compression');
 }
 
-/** Add an image: Firebase Storage when enabled, otherwise a compressed inline data URI. */
-export async function addImage(file: File, uid: string): Promise<MediaItem> {
+/** Add an image to the activity: resized, then embedded in the activity itself. */
+export async function addImage(file: File): Promise<MediaItem> {
   if (!file.type.startsWith('image/')) throw new Error('Please choose an image file');
-  const id = crypto.randomUUID().replace(/-/g, '').slice(0, 12);
-  if (useStorage) {
-    const path = `users/${uid}/media/${id}-${file.name.replace(/[^\w.-]+/g, '_')}`;
-    const r = ref(getStorage(getApp()), path);
-    await uploadBytes(r, file, { contentType: file.type });
-    return { id, name: file.name, mime: file.type, src: await getDownloadURL(r) };
-  }
+  const id = randomId(12);
   const { src, mime } = await shrinkImage(file);
   return { id, name: file.name, mime, src };
 }

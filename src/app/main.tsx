@@ -8,3 +8,15 @@ createRoot(document.getElementById('root') as HTMLElement).render(
     <App />
   </StrictMode>,
 );
+
+// Offline support: the service worker precaches the whole app (not used for the single-file build).
+if (
+  'serviceWorker' in navigator &&
+  import.meta.env.PROD &&
+  import.meta.env.MODE !== 'single' &&
+  location.protocol.startsWith('http')
+) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register(`${import.meta.env.BASE_URL}sw.js`).catch(() => undefined);
+  });
+}

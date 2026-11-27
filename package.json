@@ -6,16 +6,17 @@
   "scripts": {
     "dev": "npm run build:player && vite",
     "build:player": "vite build --config vite.player.config.ts",
-    "build": "npm run build:player && tsc --noEmit && vite build",
+    "build": "npm run build:player && tsc --noEmit && vite build && node scripts/make-sw.mjs && npm run build:offline-file",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "npm run build:player && tsc --noEmit",
     "lint": "eslint .",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "vitest run"
+    "test": "vitest run",
+    "build:app": "vite build",
+    "build:offline-file": "vite build --config vite.single.config.ts && node scripts/copy-offline.mjs"
   },
   "dependencies": {
-    "firebase": "^13.4.0",
     "jszip": "^3.10.2",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
@@ -35,6 +36,7 @@
     "typescript": "^6.0.3",
     "typescript-eslint": "^8.74.0",
     "vite": "^8.4.0",
+    "vite-plugin-singlefile": "^2.3.4",
     "vitest": "^5.1.2"
   }
 }

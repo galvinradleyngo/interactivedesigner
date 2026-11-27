@@ -3,20 +3,12 @@ import type { ActivityDoc, MediaItem } from '../schema/types';
 import { buildManifest } from '../scorm/manifest';
 import { safeFileName } from '../scorm/names';
 
-const base = import.meta.env.BASE_URL;
+import playerJs from '../../build/player/player.js?raw';
+import playerCss from '../../build/player/player.css?raw';
 
-async function fetchText(path: string): Promise<string> {
-  const r = await fetch(`${base}${path}`);
-  if (!r.ok) throw new Error(`Could not load ${path}`);
-  return r.text();
-}
-
-export async function fetchPlayerAssets(): Promise<{ js: string; css: string }> {
-  const [js, css] = await Promise.all([
-    fetchText('player/player.js'),
-    fetchText('player/player.css'),
-  ]);
-  return { js, css };
+/** The player is bundled into the app, so export and preview never hit the network. */
+export function fetchPlayerAssets(): Promise<{ js: string; css: string }> {
+  return Promise.resolve({ js: playerJs, css: playerCss });
 }
 
 const EXT: Record<string, string> = {
@@ -33,9 +25,7 @@ async function mediaBlob(m: MediaItem): Promise<Blob> {
     if (!r.ok) throw new Error(String(r.status));
     return await r.blob();
   } catch {
-    throw new Error(
-      `Could not fetch image "${m.name}" for the package. If it is stored in Firebase Storage, the bucket needs CORS configured (see README).`,
-    );
+    throw new Error(`Could not read image "${m.name}" for the package.`);
   }
 }
 

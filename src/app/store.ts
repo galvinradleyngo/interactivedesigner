@@ -1,19 +1,6 @@
-import {
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  getDocs,
-  orderBy,
-  query,
-  serverTimestamp,
-  setDoc,
-  writeBatch,
-  type Timestamp,
-} from 'firebase/firestore';
 import { migrate } from '../schema/migrate';
-import type { ActivityDoc, MediaItem } from '../schema/types';
-import { db, firebaseConfigured } from './firebase';
+import type { ActivityDoc } from '../schema/types';
+import { randomId } from './ids';
 
 export interface ActivitySummary {
   id: string;
@@ -22,115 +9,59 @@ export interface ActivitySummary {
   updatedAt: number;
 }
 
-export interface ActivityStore {
-  list(uid: string): Promise<ActivitySummary[]>;
-  get(uid: string, id: string): Promise<ActivityDoc | null>;
-  save(uid: string, id: string, a: ActivityDoc): Promise<void>;
-  remove(uid: string, id: string): Promise<void>;
-  newId(): string;
+interface Row {
+  id: string;
+  doc: ActivityDoc;
+  updatedAt: number;
 }
 
-const newId = () => crypto.randomUUID().replace(/-/g, '').slice(0, 20);
+const DB_NAME = 'interactivedesigner';
+const STORE = 'activities';
 
-/**
- * Firestore layout (all under the owner's uid, which is what the rules check):
- *   users/{uid}/activities/{id}                -> activity fields; media[] holds metadata only
- *   users/{uid}/activities/{id}/media/{mediaId} -> { src }  (one doc per image, <1MB each)
- */
-class FirestoreStore implements ActivityStore {
-  newId = newId;
-  private persistedMedia = new Map<string, Set<string>>();
-
-  async list(uid: string): Promise<ActivitySummary[]> {
-    const snap = await getDocs(
-      query(collection(db(), 'users', uid, 'activities'), orderBy('updatedAt', 'desc')),
-    );
-    return snap.docs.map((d) => {
-      const x = d.data();
-      const ts = x.updatedAt as Timestamp | null;
-      return {
-        id: d.id,
-        title: String(x.title ?? ''),
-        type: String(x.type ?? ''),
-        updatedAt: ts?.toMillis() ?? 0,
-      };
-    });
-  }
-
-  async get(uid: string, id: string): Promise<ActivityDoc | null> {
-    const ref = doc(db(), 'users', uid, 'activities', id);
-    const snap = await getDoc(ref);
-    if (!snap.exists()) return null;
-    const mediaSnap = await getDocs(collection(ref, 'media'));
-    const srcs = new Map(mediaSnap.docs.map((d) => [d.id, String(d.data().src ?? '')]));
-    const data = snap.data();
-    const media = ((data.media as MediaItem[] | undefined) ?? []).map((m) => ({
-      ...m,
-      src: srcs.get(m.id) ?? '',
-    }));
-    this.persistedMedia.set(id, new Set(srcs.keys()));
-    return migrate({ ...data, media });
-  }
-
-  async save(uid: string, id: string, a: ActivityDoc): Promise<void> {
-    const ref = doc(db(), 'users', uid, 'activities', id);
-    const known = this.persistedMedia.get(id) ?? new Set<string>();
-    const batch = writeBatch(db());
-    const ids = new Set(a.media.map((m) => m.id));
-    for (const m of a.media)
-      if (!known.has(m.id)) batch.set(doc(ref, 'media', m.id), { src: m.src });
-    for (const old of known) if (!ids.has(old)) batch.delete(doc(ref, 'media', old));
-    await batch.commit();
-    const meta = a.media.map(({ id: mid, name, mime }) => ({ id: mid, name, mime, src: '' }));
-    await setDoc(ref, { ...a, media: meta, updatedAt: serverTimestamp() });
-    this.persistedMedia.set(id, ids);
-  }
-
-  async remove(uid: string, id: string): Promise<void> {
-    const ref = doc(db(), 'users', uid, 'activities', id);
-    const m = await getDocs(collection(ref, 'media'));
-    await Promise.all(m.docs.map((d) => deleteDoc(d.ref)));
-    await deleteDoc(ref);
-    this.persistedMedia.delete(id);
-  }
+let dbPromise: Promise<IDBDatabase> | null = null;
+function open(): Promise<IDBDatabase> {
+  dbPromise ??= new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, 1);
+    req.onupgradeneeded = () => req.result.createObjectStore(STORE, { keyPath: 'id' });
+    req.onsuccess = () => resolve(req.result);
+    req.onerror = () => reject(req.error ?? new Error('Could not open browser storage'));
+  });
+  return dbPromise;
 }
 
-/** Fallback when Firebase isn't configured (also handy for trying the app locally). */
-class LocalStore implements ActivityStore {
-  newId = newId;
-  private key = (uid: string) => `interactivedesigner:${uid}`;
-  private read(uid: string): Record<string, { doc: ActivityDoc; updatedAt: number }> {
-    try {
-      return JSON.parse(localStorage.getItem(this.key(uid)) ?? '{}') as Record<
-        string,
-        { doc: ActivityDoc; updatedAt: number }
-      >;
-    } catch {
-      return {};
-    }
-  }
-  private write(uid: string, v: unknown) {
-    localStorage.setItem(this.key(uid), JSON.stringify(v));
-  }
-  async list(uid: string) {
-    return Object.entries(this.read(uid))
-      .map(([id, v]) => ({ id, title: v.doc.title, type: v.doc.type, updatedAt: v.updatedAt }))
+async function tx<T>(
+  mode: IDBTransactionMode,
+  fn: (s: IDBObjectStore) => IDBRequest<T>,
+): Promise<T> {
+  const db = await open();
+  return new Promise((resolve, reject) => {
+    const t = db.transaction(STORE, mode);
+    const req = fn(t.objectStore(STORE));
+    t.oncomplete = () => resolve(req.result);
+    t.onerror = () => reject(t.error ?? new Error('Browser storage error'));
+    t.onabort = () => reject(t.error ?? new Error('Browser storage was blocked or is full'));
+  });
+}
+
+export const newId = (): string => randomId(20);
+
+/** Activities live in this browser's IndexedDB. Use project files for backups and sharing. */
+export const store = {
+  newId,
+  async list(): Promise<ActivitySummary[]> {
+    const rows = await tx<Row[]>('readonly', (s) => s.getAll());
+    return rows
+      .map((r) => ({ id: r.id, title: r.doc.title, type: r.doc.type, updatedAt: r.updatedAt }))
       .sort((a, b) => b.updatedAt - a.updatedAt);
-  }
-  async get(uid: string, id: string) {
-    const v = this.read(uid)[id];
-    return v ? migrate(v.doc) : null;
-  }
-  async save(uid: string, id: string, a: ActivityDoc) {
-    const all = this.read(uid);
-    all[id] = { doc: a, updatedAt: Date.now() };
-    this.write(uid, all);
-  }
-  async remove(uid: string, id: string) {
-    const all = this.read(uid);
-    delete all[id];
-    this.write(uid, all);
-  }
-}
-
-export const store: ActivityStore = firebaseConfigured ? new FirestoreStore() : new LocalStore();
+  },
+  async get(id: string): Promise<ActivityDoc | null> {
+    const row = await tx<Row | undefined>('readonly', (s) => s.get(id));
+    return row ? migrate(row.doc) : null;
+  },
+  async save(id: string, doc: ActivityDoc): Promise<void> {
+    await tx('readwrite', (s) => s.put({ id, doc, updatedAt: Date.now() } satisfies Row));
+  },
+  async remove(id: string): Promise<void> {
+    await tx('readwrite', (s) => s.delete(id));
+  },
+};

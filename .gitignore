@@ -1,7 +1,6 @@
 node_modules
 dist
-public/player
+build
 .env
 .env.local
 *.log
-.firebase

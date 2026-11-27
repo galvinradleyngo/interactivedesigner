@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { ActivityDoc, FontChoice, ScormVersion } from '../../schema/types';
-import { useAuth } from '../auth';
 import { Preview } from '../components/Preview';
 import { buildScormZip, download } from '../export';
 import { addImage } from '../media';
@@ -12,8 +11,6 @@ type SaveState = 'saved' | 'dirty' | 'saving' | 'error';
 
 export function Editor() {
   const { id = '' } = useParams();
-  const { user } = useAuth();
-  const uid = user?.uid ?? '';
   const [doc, setDoc] = useState<ActivityDoc | null>(null);
   const [missing, setMissing] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>('saved');
@@ -23,11 +20,11 @@ export function Editor() {
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
-    store.get(uid, id).then(
+    store.get(id).then(
       (d) => (d ? ((latest.current = d), setDoc(d)) : setMissing(true)),
       (e: Error) => setMsg(e.message),
     );
-  }, [uid, id]);
+  }, [id]);
 
   const save = useCallback(async () => {
     const d = latest.current;
@@ -35,13 +32,13 @@ export function Editor() {
     clearTimeout(timer.current);
     setSaveState('saving');
     try {
-      await store.save(uid, id, d);
+      await store.save(id, d);
       setSaveState(latest.current === d ? 'saved' : 'dirty');
     } catch (e) {
       setSaveState('error');
       setMsg(`Save failed: ${(e as Error).message}`);
     }
-  }, [uid, id]);
+  }, [id]);
 
   const update = useCallback(
     (fn: (d: ActivityDoc) => ActivityDoc) => {
@@ -64,8 +61,18 @@ export function Editor() {
     return () => window.removeEventListener('beforeunload', warn);
   }, [saveState]);
 
-  // Flush pending changes when leaving the editor.
-  useEffect(() => () => clearTimeout(timer.current), []);
+  // Flush pending changes when leaving the editor (route change or unmount).
+  const dirty = useRef(false);
+  useEffect(() => {
+    dirty.current = saveState === 'dirty';
+  }, [saveState]);
+  useEffect(
+    () => () => {
+      clearTimeout(timer.current);
+      if (dirty.current && latest.current) void store.save(id, latest.current);
+    },
+    [id],
+  );
 
   if (missing)
     return (
@@ -79,7 +86,7 @@ export function Editor() {
   const { Editor: TypeEditor } = plugin;
 
   const addImg = async (file: File): Promise<string> => {
-    const m = await addImage(file, uid);
+    const m = await addImage(file);
     update((d) => ({ ...d, media: [...d.media, m] }));
     return `media:${m.id}`;
   };

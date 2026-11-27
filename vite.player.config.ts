@@ -5,7 +5,7 @@ export default defineConfig({
   base: './',
   publicDir: false,
   build: {
-    outDir: 'public/player',
+    outDir: 'build/player',
     emptyOutDir: true,
     cssCodeSplit: false,
     sourcemap: false,
