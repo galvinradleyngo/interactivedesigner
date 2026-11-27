@@ -1,6 +1,6 @@
 /** Shared, framework-free types. Imported by both the authoring app and the player. */
 
-export const SCHEMA_VERSION = 3;
+export const SCHEMA_VERSION = 4;
 
 /** Interactions that can be graded. Must match the `gradable` flag in plugins/defs (tested). */
 export const GRADABLE_TYPES: readonly string[] = ['multipleChoice', 'dragDrop', 'interactiveVideo'];

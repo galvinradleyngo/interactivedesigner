@@ -43,9 +43,6 @@ export function checkProject(doc: ProjectDoc): Issue[] {
           if (graded && arr('items').length > 0 && !arr('items').some((i) => i.zone))
             add('has no item with a correct zone, so it is not graded');
           break;
-        case 'flashcards':
-          if (arr('cards').length === 0) add('has no cards');
-          break;
         case 'flipCard': {
           const empty = (f: unknown) => {
             const x = (f ?? {}) as Record<string, unknown>;

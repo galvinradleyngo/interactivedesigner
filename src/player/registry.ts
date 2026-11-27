@@ -1,7 +1,6 @@
 import type { BlockPlayer } from '../plugins/types';
 import { buttonPlayer } from '../plugins/button/player';
 import { dragDropPlayer } from '../plugins/dragDrop/player';
-import { flashcardsPlayer } from '../plugins/flashcards/player';
 import { flipCardPlayer } from '../plugins/flipCard/player';
 import { hotspotsPlayer } from '../plugins/hotspots/player';
 import { imagePlayer } from '../plugins/image/player';
@@ -19,7 +18,6 @@ const players = [
   buttonPlayer,
   hotspotsPlayer,
   dragDropPlayer,
-  flashcardsPlayer,
   flipCardPlayer,
   interactiveVideoPlayer,
   timelinePlayer,

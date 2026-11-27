@@ -2,7 +2,6 @@ import type { ComponentType } from 'react';
 import { ButtonPanel } from '../plugins/button/Panel';
 import { DragDropOverlay } from '../plugins/dragDrop/Overlay';
 import { DragDropPanel } from '../plugins/dragDrop/Panel';
-import { FlashcardsPanel } from '../plugins/flashcards/Panel';
 import { FlipCardPanel } from '../plugins/flipCard/Panel';
 import { HotspotsOverlay } from '../plugins/hotspots/Overlay';
 import { HotspotsPanel } from '../plugins/hotspots/Panel';
@@ -36,7 +35,6 @@ export const EDITOR_BLOCKS: Record<string, EditorBlock> = {
   button: { Panel: cast(ButtonPanel) },
   hotspots: { Panel: cast(HotspotsPanel), Overlay: castO(HotspotsOverlay) },
   dragDrop: { Panel: cast(DragDropPanel), Overlay: castO(DragDropOverlay) },
-  flashcards: { Panel: cast(FlashcardsPanel) },
   flipCard: { Panel: cast(FlipCardPanel) },
   interactiveVideo: {
     Panel: cast(InteractiveVideoPanel),

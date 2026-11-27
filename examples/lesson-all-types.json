@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 3,
+  "schemaVersion": 4,
   "title": "Sample lesson (all activity types)",
   "settings": {
     "passingScore": 70,
@@ -359,52 +359,93 @@
           }
         },
         {
-          "id": "f",
-          "type": "flashcards",
+          "id": "f1",
+          "type": "flipCard",
           "x": 240,
           "y": 110,
-          "w": 480,
+          "w": 149,
           "h": 340,
           "props": {
-            "shuffle": false,
-            "frontColor": "#4f46e5",
-            "backColor": "#0f766e",
-            "textColor": "#ffffff",
-            "cards": [
-              {
-                "id": "c1",
-                "front": {
-                  "text": "Hello",
-                  "image": null
-                },
-                "back": {
-                  "text": "Hola",
-                  "image": null
-                }
-              },
-              {
-                "id": "c2",
-                "front": {
-                  "text": "Thank you",
-                  "image": null
-                },
-                "back": {
-                  "text": "Gracias",
-                  "image": null
-                }
-              },
-              {
-                "id": "c3",
-                "front": {
-                  "text": "Goodbye",
-                  "image": null
-                },
-                "back": {
-                  "text": "Adi\u00f3s",
-                  "image": null
-                }
-              }
-            ]
+            "shape": "rounded",
+            "direction": "horizontal",
+            "flipBack": true,
+            "radius": 18,
+            "front": {
+              "fill": "#4f46e5",
+              "text": "Hello",
+              "textColor": "#ffffff",
+              "fontSize": 28,
+              "image": null,
+              "imageLayout": "background"
+            },
+            "back": {
+              "fill": "#0f766e",
+              "text": "Hola",
+              "textColor": "#ffffff",
+              "fontSize": 28,
+              "image": null,
+              "imageLayout": "background"
+            }
+          }
+        },
+        {
+          "id": "f2",
+          "type": "flipCard",
+          "x": 405,
+          "y": 110,
+          "w": 149,
+          "h": 340,
+          "props": {
+            "shape": "rounded",
+            "direction": "horizontal",
+            "flipBack": true,
+            "radius": 18,
+            "front": {
+              "fill": "#4f46e5",
+              "text": "Thank you",
+              "textColor": "#ffffff",
+              "fontSize": 28,
+              "image": null,
+              "imageLayout": "background"
+            },
+            "back": {
+              "fill": "#0f766e",
+              "text": "Gracias",
+              "textColor": "#ffffff",
+              "fontSize": 28,
+              "image": null,
+              "imageLayout": "background"
+            }
+          }
+        },
+        {
+          "id": "f3",
+          "type": "flipCard",
+          "x": 571,
+          "y": 110,
+          "w": 149,
+          "h": 340,
+          "props": {
+            "shape": "rounded",
+            "direction": "horizontal",
+            "flipBack": true,
+            "radius": 18,
+            "front": {
+              "fill": "#4f46e5",
+              "text": "Goodbye",
+              "textColor": "#ffffff",
+              "fontSize": 28,
+              "image": null,
+              "imageLayout": "background"
+            },
+            "back": {
+              "fill": "#0f766e",
+              "text": "Adiós",
+              "textColor": "#ffffff",
+              "fontSize": 28,
+              "image": null,
+              "imageLayout": "background"
+            }
           }
         }
       ]
@@ -578,7 +619,7 @@
             },
             "back": {
               "fill": "#0f766e",
-              "text": "Bras\u00edlia",
+              "text": "Brasília",
               "textColor": "#ffffff",
               "fontSize": 24,
               "image": null,
