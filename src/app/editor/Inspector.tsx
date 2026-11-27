@@ -16,9 +16,14 @@ import { ImagePicker } from '../components/ImagePicker';
 import { EDITOR_BLOCKS } from '../registry';
 import type { AlignTo, ZMove } from './model';
 
-type Tab = 'element' | 'page' | 'project';
+export type InspectorTab = 'element' | 'page' | 'grading' | 'settings';
+type Tab = InspectorTab;
 
 interface Props {
+  /** Ask the inspector to show a tab (n changes each time so the same tab can be requested again). */
+  openTab?: { tab: InspectorTab; n: number };
+  /** Jump to an interaction on another page. */
+  onGo(pageId: string, elementId: string): void;
   doc: ProjectDoc;
   page: Page;
   el: StageElement | null;
@@ -51,13 +56,18 @@ export function Inspector(p: Props) {
   const [tab, setTab] = useState<Tab>(p.el ? 'element' : 'page');
   const elId = p.el?.id ?? null;
   useEffect(() => setTab(elId ? 'element' : 'page'), [elId]);
+  const requested = p.openTab;
+  useEffect(() => {
+    if (requested) setTab(requested.tab);
+  }, [requested]);
 
   // Never show the Element tab without an element.
   const active: Tab = tab === 'element' && !p.el ? 'page' : tab;
   const tabs: { id: Tab; label: string; disabled?: boolean }[] = [
     { id: 'element', label: 'Element', disabled: !p.el },
     { id: 'page', label: 'Page' },
-    { id: 'project', label: 'Project' },
+    { id: 'grading', label: 'Grading' },
+    { id: 'settings', label: 'Settings' },
   ];
 
   return (
@@ -80,7 +90,8 @@ export function Inspector(p: Props) {
       <div className="tabpanel" role="tabpanel">
         {active === 'element' && p.el && <ElementTab {...p} el={p.el} />}
         {active === 'page' && <PageTab {...p} />}
-        {active === 'project' && <ProjectTab {...p} />}
+        {active === 'grading' && <GradingTab {...p} />}
+        {active === 'settings' && <SettingsTab {...p} />}
       </div>
     </aside>
   );
@@ -93,7 +104,7 @@ function ElementTab(p: Props & { el: StageElement }) {
   if (!def || !block) return <p className="muted">Unknown element type “{el.type}”.</p>;
   const props = { ...def.createDefault(), ...el.props };
   const Panel = block.Panel;
-  const scorable = !!def.fraction;
+  const gradable = !!def.gradable && doc.settings.graded;
   const scored = def.isScored?.(props) ?? false;
   const pos = (patch: Partial<StageElement>) => p.patchEl(patch, `pos-${el.id}`);
 
@@ -170,36 +181,24 @@ function ElementTab(p: Props & { el: StageElement }) {
         </div>
       </Section>
 
-      {scorable && (
-        <Section title="Scoring">
-          {doc.settings.graded === false ? (
-            <p className="muted">
-              This project is ungraded, so no scores or points are shown or reported.
-            </p>
-          ) : (
-            <>
-              <Check
-                label="Counts toward the score"
-                checked={el.props.graded !== false}
-                onChange={(graded) => p.setProps({ ...el.props, graded })}
-              />
-              {el.props.graded !== false && (
-                <Num
-                  label="Points"
-                  value={blockPoints(el.props)}
-                  min={0}
-                  max={1000}
-                  onChange={(points) => p.setProps({ ...el.props, points }, `pts-${el.id}`)}
-                />
-              )}
-              <p className={scored && el.props.graded !== false ? 'muted' : 'warn'}>
-                {el.props.graded === false
-                  ? 'Ungraded: learners can try it, but it adds nothing to the score and shows no marks.'
-                  : scored
-                    ? 'Counts toward the project score (the total of all graded activities).'
-                    : 'Not scored right now. Change the mode or mark correct answers to score it.'}
-              </p>
-            </>
+      {gradable && (
+        <Section title="Grading">
+          <Check
+            label="Counts toward the grade"
+            checked={el.props.graded !== false}
+            onChange={(graded) => p.setProps({ ...el.props, graded })}
+          />
+          {el.props.graded !== false && (
+            <Num
+              label="Points"
+              value={blockPoints(el.props)}
+              min={0}
+              max={1000}
+              onChange={(points) => p.setProps({ ...el.props, points }, `pts-${el.id}`)}
+            />
+          )}
+          {el.props.graded !== false && !scored && (
+            <p className="warn">Not graded yet: mark which answers are correct.</p>
           )}
         </Section>
       )}
@@ -236,7 +235,7 @@ function PageTab(p: Props) {
       </Section>
       <Section title="Background">
         <Check
-          label="Use the project background colour"
+          label="Use the activity background colour"
           checked={inheritBg}
           onChange={(v) => p.patchPage({ background: v ? undefined : doc.design.background })}
         />
@@ -248,7 +247,7 @@ function PageTab(p: Props) {
           />
         )}
         <Check
-          label="Use the project background picture"
+          label="Use the activity background picture"
           checked={inheritImg}
           onChange={(v) => p.patchPage({ backgroundImage: v ? undefined : null })}
         />
@@ -266,7 +265,140 @@ function PageTab(p: Props) {
   );
 }
 
-function ProjectTab(p: Props) {
+function GradingTab(p: Props) {
+  const { doc } = p;
+  const s = doc.settings;
+  const setS = (patch: Partial<ProjectSettings>, key?: string) =>
+    p.change((x) => ({ ...x, settings: { ...x.settings, ...patch } }), key);
+  const rows = doc.pages.flatMap((pg) =>
+    pg.elements
+      .filter((e) => DEFS_BY_TYPE.get(e.type)?.gradable)
+      .map((e) => ({ page: pg, el: e, def: DEFS_BY_TYPE.get(e.type) })),
+  );
+  const counted = rows.filter((r) => r.el.props.graded !== false);
+  const total = counted.reduce((n, r) => n + blockPoints(r.el.props), 0);
+  const setRow = (pageId: string, elId: string, patch: Record<string, unknown>, key?: string) =>
+    p.change(
+      (x) => ({
+        ...x,
+        pages: x.pages.map((pg) =>
+          pg.id !== pageId
+            ? pg
+            : {
+                ...pg,
+                elements: pg.elements.map((e) =>
+                  e.id === elId ? { ...e, props: { ...e.props, ...patch } } : e,
+                ),
+              },
+        ),
+      }),
+      key,
+    );
+
+  return (
+    <>
+      <Section title="Grading">
+        <label className={`bigswitch ${s.graded ? 'on' : ''}`}>
+          <input
+            type="checkbox"
+            role="switch"
+            checked={s.graded}
+            onChange={(e) => setS({ graded: e.target.checked })}
+          />
+          <span className="switch-track" aria-hidden="true">
+            <span className="switch-knob" />
+          </span>
+          <span>
+            <strong>{s.graded ? 'Graded' : 'Not graded'}</strong>
+            <small>
+              {s.graded
+                ? 'Learners get a score. It is sent to the LMS gradebook.'
+                : 'No scores, points or pass/fail. Only completion is reported.'}
+            </small>
+          </span>
+        </label>
+        <p className="muted">
+          Only multiple choice and drag and drop can be graded. Hotspots, flip cards, timelines and
+          the comparison slider are for learning, not marks.
+        </p>
+      </Section>
+
+      {s.graded && (
+        <>
+          <Section title="Pass mark">
+            <Num
+              label="Passing score"
+              value={s.passingScore}
+              min={0}
+              max={100}
+              suffix="%"
+              onChange={(passingScore) => setS({ passingScore }, 'pass')}
+            />
+          </Section>
+          <Section title={`Graded interactions (${counted.length})`}>
+            {rows.length === 0 ? (
+              <p className="warn">
+                Nothing to grade yet. Add a <strong>Multiple choice</strong> or{' '}
+                <strong>Drag and drop</strong> interaction on any page.
+              </p>
+            ) : (
+              <>
+                <ul className="gradelist">
+                  {rows.map(({ page, el, def }) => {
+                    const on = el.props.graded !== false;
+                    return (
+                      <li key={el.id}>
+                        <label className="check">
+                          <input
+                            type="checkbox"
+                            checked={on}
+                            aria-label={`${def?.label} on ${page.name} counts toward the grade`}
+                            onChange={(e) => setRow(page.id, el.id, { graded: e.target.checked })}
+                          />
+                        </label>
+                        <button
+                          type="button"
+                          className="link"
+                          onClick={() => p.onGo(page.id, el.id)}
+                        >
+                          {page.name} · {el.name || def?.label}
+                        </button>
+                        {on && (
+                          <input
+                            type="number"
+                            min={0}
+                            max={1000}
+                            className="pts"
+                            aria-label={`Points for ${def?.label} on ${page.name}`}
+                            value={blockPoints(el.props)}
+                            onChange={(e) =>
+                              setRow(
+                                page.id,
+                                el.id,
+                                { points: Math.max(0, Number(e.target.value) || 0) },
+                                `pts-${el.id}`,
+                              )
+                            }
+                          />
+                        )}
+                      </li>
+                    );
+                  })}
+                </ul>
+                <p className="muted">
+                  Total: <strong>{total} points</strong>. The learner’s score is the share of these
+                  points they earn.
+                </p>
+              </>
+            )}
+          </Section>
+        </>
+      )}
+    </>
+  );
+}
+
+function SettingsTab(p: Props) {
   const { doc } = p;
   const s = doc.settings;
   const d = doc.design;
@@ -276,34 +408,14 @@ function ProjectTab(p: Props) {
     p.change((x) => ({ ...x, design: { ...x.design, ...patch } }), key);
   return (
     <>
-      <Section title="Project">
+      <Section title="Activity">
         <Txt
           label="Title (also the zip file name)"
           value={doc.title}
           onChange={(title) => p.change((x) => ({ ...x, title }), 'title')}
         />
       </Section>
-      <Section title="Scoring & SCORM">
-        <Check
-          label="Ungraded (practice only)"
-          checked={s.graded === false}
-          onChange={(ungraded) => setS({ graded: !ungraded })}
-        />
-        <p className="muted">
-          {s.graded === false
-            ? 'No scores, points, percentages or pass/fail are shown, and no score is sent to the LMS (the package only reports completion).'
-            : 'Graded: the score is the total of every graded activity’s points.'}
-        </p>
-        {s.graded !== false && (
-          <Num
-            label="Passing score"
-            value={s.passingScore}
-            min={0}
-            max={100}
-            suffix="%"
-            onChange={(passingScore) => setS({ passingScore }, 'pass')}
-          />
-        )}
+      <Section title="Learners and the LMS">
         <Select<ScormVersion>
           label="SCORM version"
           value={s.scormVersion}

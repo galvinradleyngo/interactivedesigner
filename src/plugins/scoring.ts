@@ -23,7 +23,8 @@ export function scoredBlocks(
     for (const el of page.elements) {
       const def = defs.get(el.type);
       if (
-        def?.isScored?.(el.props) &&
+        def?.gradable &&
+        def.isScored?.(el.props) &&
         isGraded(project.settings, el.props) &&
         blockPoints(el.props) > 0
       )

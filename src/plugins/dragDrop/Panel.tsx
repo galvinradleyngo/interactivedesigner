@@ -215,7 +215,7 @@ export function DragDropPanel({
           </div>
         )}
         {props.items.length > 0 && !props.items.some((i) => i.zone) && (
-          <p className="warn">No item has a correct zone yet, so this activity is not scored.</p>
+          <p className="warn">No item has a correct zone yet, so this interaction is not graded.</p>
         )}
       </Section>
     </>

@@ -1,20 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import { DEFS_BY_TYPE } from '../plugins/defs';
+import { BLOCK_DEFS, DEFS_BY_TYPE } from '../plugins/defs';
 import { ddFraction, type DdProps } from '../plugins/dragDrop/type';
-import { hotspotsDef, type HotspotProps } from '../plugins/hotspots/type';
+import { multipleChoiceDef } from '../plugins/multipleChoice/type';
 import { aggregate, scoredBlocks } from '../plugins/scoring';
+import { isGraded } from '../plugins/types';
 import { migrate, newProject } from '../schema/migrate';
-import type { ProjectDoc, StageElement } from '../schema/types';
-
-const hs = (over: Partial<HotspotProps> = {}): HotspotProps => ({
-  ...hotspotsDef.createDefault(),
-  mode: 'find',
-  hotspots: [
-    { id: 'a', x: 10, y: 10, label: 'A', html: '', image: null, correct: true },
-    { id: 'b', x: 50, y: 50, label: 'B', html: '', image: null, correct: false },
-  ],
-  ...over,
-});
+import {
+  GRADABLE_TYPES,
+  SCHEMA_VERSION,
+  type ProjectDoc,
+  type StageElement,
+} from '../schema/types';
 
 const dd = (): DdProps => ({
   points: 10,
@@ -32,6 +28,7 @@ const dd = (): DdProps => ({
   ],
 });
 
+const rec = (v: unknown) => v as Record<string, unknown>;
 const el = (id: string, type: string, props: Record<string, unknown>): StageElement => ({
   id,
   type,
@@ -41,8 +38,9 @@ const el = (id: string, type: string, props: Record<string, unknown>): StageElem
   h: 100,
   props,
 });
-const withEls = (...els: StageElement[]): ProjectDoc => {
+const activity = (graded: boolean, ...els: StageElement[]): ProjectDoc => {
   const p = newProject('t');
+  p.settings = { ...p.settings, graded };
   p.pages[0]!.elements = els;
   return p;
 };
@@ -57,95 +55,137 @@ describe('drag and drop scoring', () => {
     expect(ddFraction(dd(), { i1: 'z1', i2: 'z1', i3: 'z2', i4: 'z1' })).toBeCloseTo(2 / 3);
     expect(ddFraction(dd(), { i1: 'z2', i3: 'z1' })).toBe(0);
   });
-  it('is only scored when some item has a correct zone', () => {
+  it('only has something to grade when an item has a correct zone', () => {
     const def = DEFS_BY_TYPE.get('dragDrop')!;
     expect(
-      def.isScored?.({
-        ...dd(),
-        items: dd().items.map((i) => ({ ...i, zone: null })),
-      } as unknown as Record<string, unknown>),
+      def.isScored?.(rec({ ...dd(), items: dd().items.map((i) => ({ ...i, zone: null })) })),
     ).toBe(false);
-    expect(def.isScored?.(dd() as unknown as Record<string, unknown>)).toBe(true);
+    expect(def.isScored?.(rec(dd()))).toBe(true);
   });
 });
 
-describe('hotspot scoring', () => {
-  it('find mode is scored; explore is not', () => {
-    expect(hotspotsDef.isScored?.(hs())).toBe(true);
-    expect(hotspotsDef.isScored?.(hs({ mode: 'explore' }))).toBe(false);
+describe('which interactions can be graded', () => {
+  it('only multiple choice and drag and drop', () => {
+    expect(
+      BLOCK_DEFS.filter((d) => d.gradable)
+        .map((d) => d.type)
+        .sort(),
+    ).toEqual(['dragDrop', 'multipleChoice']);
+    expect([...GRADABLE_TYPES].sort()).toEqual(['dragDrop', 'multipleChoice']); // schema list stays in sync
   });
-  it('correct pick = 1, wrong or none = 0', () => {
-    expect(hotspotsDef.fraction?.(hs(), { pick: 'a', seen: [] })).toBe(1);
-    expect(hotspotsDef.fraction?.(hs(), { pick: 'b', seen: [] })).toBe(0);
-    expect(hotspotsDef.fraction?.(hs(), null)).toBe(0);
+  it('hotspots, flip cards, timelines, flash cards and comparisons have no grading at all', () => {
+    for (const t of [
+      'hotspots',
+      'flipCard',
+      'timeline',
+      'flashcards',
+      'imageCompare',
+      'text',
+      'image',
+      'shape',
+      'button',
+    ]) {
+      const d = DEFS_BY_TYPE.get(t)!;
+      expect(d.gradable).toBeFalsy();
+      expect(d.isScored).toBeUndefined();
+      expect(d.fraction).toBeUndefined();
+    }
   });
 });
 
-describe('project aggregate', () => {
-  const project = withEls(
-    el('h', 'hotspots', { ...hs(), points: 10 }),
-    el('d', 'dragDrop', { ...dd(), points: 30 }),
-    el('t', 'text', {}),
-    el('f', 'flashcards', {}),
-  );
-  it('lists only scored blocks with their points', () => {
-    expect(scoredBlocks(project, DEFS_BY_TYPE)).toEqual([
-      { id: 'h', points: 10 },
+describe('isGraded', () => {
+  it('is off unless the activity is graded, and an interaction can opt out', () => {
+    expect(isGraded({ graded: false }, {})).toBe(false);
+    expect(isGraded({}, {})).toBe(false);
+    expect(isGraded({ graded: true }, {})).toBe(true);
+    expect(isGraded({ graded: true }, { graded: false })).toBe(false);
+  });
+});
+
+describe('activity score', () => {
+  const mc = (points: number) =>
+    el('m', 'multipleChoice', { ...rec(multipleChoiceDef.createDefault()), points });
+  const drag = (points: number) => el('d', 'dragDrop', { ...rec(dd()), points });
+
+  it('new activities are not graded', () => {
+    expect(newProject('x').settings.graded).toBe(false);
+  });
+  it('a graded activity lists only gradable interactions with their points', () => {
+    const p = activity(
+      true,
+      mc(10),
+      drag(30),
+      el('t', 'text', {}),
+      el('f', 'flashcards', {}),
+      el('h', 'hotspots', { mode: 'find' }),
+    );
+    expect(scoredBlocks(p, DEFS_BY_TYPE)).toEqual([
+      { id: 'm', points: 10 },
       { id: 'd', points: 30 },
     ]);
   });
-  it('sums fraction x points; unattempted counts as 0', () => {
-    const a = aggregate(project, DEFS_BY_TYPE, {
-      h: { fraction: 1, done: true },
+  it('score = sum of fraction x points; unattempted counts 0', () => {
+    const p = activity(true, mc(10), drag(30));
+    const a = aggregate(p, DEFS_BY_TYPE, {
+      m: { fraction: 1, done: true },
       d: { fraction: 0.5, done: true },
     });
     expect(a.score).toEqual({ raw: 25, max: 40 });
     expect(a.allScoredDone).toBe(true);
-    const b = aggregate(project, DEFS_BY_TYPE, { h: { fraction: 1, done: true } });
+    const b = aggregate(p, DEFS_BY_TYPE, { m: { fraction: 1, done: true } });
     expect(b.score).toEqual({ raw: 10, max: 40 });
     expect(b.allScoredDone).toBe(false);
   });
-  it('has no score when nothing is scored', () => {
-    const a = aggregate(withEls(el('t', 'text', {})), DEFS_BY_TYPE, {});
-    expect(a.score).toBeNull();
-    expect(a.allScoredDone).toBe(true);
-  });
-  it('ignores zero-point blocks', () => {
-    const p = withEls(el('h', 'hotspots', { ...hs(), points: 0 }));
+  it('a not-graded activity has no score and counts as done', () => {
+    const p = activity(false, mc(10), drag(30));
     expect(scoredBlocks(p, DEFS_BY_TYPE)).toEqual([]);
-  });
-});
-
-describe('ungraded', () => {
-  const graded = (flag?: boolean) => {
-    const p = withEls(
-      el('h', 'hotspots', { ...hs(), points: 10 }),
-      el('d', 'dragDrop', { ...dd(), points: 10, graded: false }),
-    );
-    p.settings = { ...p.settings, graded: flag ?? true };
-    return p;
-  };
-  it('a project marked ungraded has no score and counts as done', () => {
-    const a = aggregate(graded(false), DEFS_BY_TYPE, { h: { fraction: 1, done: true } });
+    const a = aggregate(p, DEFS_BY_TYPE, { m: { fraction: 1, done: true } });
     expect(a.score).toBeNull();
     expect(a.scoredCount).toBe(0);
     expect(a.allScoredDone).toBe(true);
-    expect(scoredBlocks(graded(false), DEFS_BY_TYPE)).toEqual([]);
   });
-  it('an activity marked ungraded is left out of the total', () => {
-    expect(scoredBlocks(graded(), DEFS_BY_TYPE)).toEqual([{ id: 'h', points: 10 }]);
-    const a = aggregate(graded(), DEFS_BY_TYPE, { h: { fraction: 1, done: true } });
+  it('an interaction switched off is left out and not required', () => {
+    const p = activity(true, mc(10), { ...drag(30), props: { ...drag(30).props, graded: false } });
+    expect(scoredBlocks(p, DEFS_BY_TYPE)).toEqual([{ id: 'm', points: 10 }]);
+    const a = aggregate(p, DEFS_BY_TYPE, { m: { fraction: 1, done: true } });
     expect(a.score).toEqual({ raw: 10, max: 10 });
-    expect(a.allScoredDone).toBe(true); // the ungraded drag and drop is not required
+    expect(a.allScoredDone).toBe(true);
   });
-  it('old projects without the flag stay graded', () => {
-    const p = withEls(el('h', 'hotspots', hs() as unknown as Record<string, unknown>));
-    expect(migrate(p).settings.graded).toBe(true);
+  it('graded but with nothing gradable has no score', () => {
+    expect(aggregate(activity(true, el('t', 'text', {})), DEFS_BY_TYPE, {}).score).toBeNull();
+  });
+  it('ignores zero-point interactions', () => {
+    expect(scoredBlocks(activity(true, mc(0)), DEFS_BY_TYPE)).toEqual([]);
   });
 });
 
-describe('migrate v1 -> v2', () => {
-  it('wraps a single activity into one page with one block', () => {
+describe('migrate: grading', () => {
+  const oldDoc = (version: number, graded: boolean | undefined, ...els: StageElement[]) => ({
+    schemaVersion: version,
+    title: 't',
+    settings: graded === undefined ? {} : { graded },
+    design: {},
+    media: [],
+    pages: [{ id: 'p', name: 'Page 1', elements: els }],
+  });
+  const mcEl = el('m', 'multipleChoice', {});
+  const hsEl = el('h', 'hotspots', {});
+
+  it('older activities stay graded only if something can be graded', () => {
+    expect(migrate(oldDoc(2, undefined, mcEl)).settings.graded).toBe(true); // before the flag existed
+    expect(migrate(oldDoc(2, true, mcEl)).settings.graded).toBe(true);
+    expect(migrate(oldDoc(2, true, hsEl)).settings.graded).toBe(false); // was graded by default, nothing to grade
+    expect(migrate(oldDoc(2, false, mcEl)).settings.graded).toBe(false); // an explicit choice is kept
+    expect(migrate(oldDoc(2, undefined, hsEl)).settings.graded).toBe(false);
+  });
+  it('current activities default to not graded', () => {
+    expect(migrate(oldDoc(SCHEMA_VERSION, undefined, mcEl)).settings.graded).toBe(false);
+    expect(migrate(oldDoc(SCHEMA_VERSION, true, mcEl)).settings.graded).toBe(true);
+  });
+});
+
+describe('migrate v1 -> current', () => {
+  it('wraps a single activity into one page with one interaction', () => {
     const v1 = {
       schemaVersion: 1,
       type: 'multipleChoice',
@@ -156,18 +196,19 @@ describe('migrate v1 -> v2', () => {
       media: [{ id: 'm', src: 'x', name: 'n', mime: 'image/png' }],
     };
     const p = migrate(v1);
-    expect(p.schemaVersion).toBe(2);
+    expect(p.schemaVersion).toBe(SCHEMA_VERSION);
     expect(p.pages).toHaveLength(1);
     const e = p.pages[0]!.elements[0]!;
     expect(e.type).toBe('multipleChoice');
     expect(e.props.intro).toBe('hi');
     expect(e.props.points).toBe(10);
     expect(p.settings.passingScore).toBe(70);
+    expect(p.settings.graded).toBe(true); // a quiz that was graded stays graded
     expect(p.design.primary).toBe('#123456');
     expect(p.media).toHaveLength(1);
     expect('content' in p).toBe(false);
   });
-  it('is stable on v2 and gives blank projects one page', () => {
+  it('is stable on the current version and gives blank activities one page', () => {
     const p = newProject('x');
     expect(migrate(p)).toEqual(p);
     expect(migrate({ title: 'y' }).pages).toHaveLength(1);

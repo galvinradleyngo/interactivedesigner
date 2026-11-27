@@ -111,7 +111,7 @@ export function PreviewModal({ doc, startPage, issueCount, onClose }: Props) {
           {!full &&
             !landscape &&
             wideProject &&
-            ' · Tip: wide pages look small upright; try a portrait Page shape in Project settings'}
+            ' · Tip: wide pages look small upright; try a portrait Page shape in Settings'}
         </span>
         <span className="spacer" />
         <button type="button" onClick={onClose} autoFocus>
@@ -125,7 +125,7 @@ export function PreviewModal({ doc, startPage, issueCount, onClose }: Props) {
         >
           <iframe
             key={restart}
-            title="Project preview"
+            title="Activity preview"
             sandbox="allow-scripts"
             srcDoc={srcDoc}
             style={

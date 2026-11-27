@@ -1,11 +1,12 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "title": "Sample hotspots",
   "settings": {
     "passingScore": 70,
     "scormVersion": "2004",
     "showFeedback": true,
-    "allowRetry": true
+    "allowRetry": true,
+    "graded": false
   },
   "design": {
     "primary": "#4f46e5",
@@ -44,7 +45,6 @@
           "w": 640,
           "h": 420,
           "props": {
-            "points": 10,
             "image": "media:anat",
             "mode": "explore",
             "prompt": "",
@@ -101,7 +101,6 @@
           "w": 640,
           "h": 420,
           "props": {
-            "points": 10,
             "image": "media:anat",
             "mode": "find",
             "prompt": "Click the eye on the left.",

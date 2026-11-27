@@ -1,11 +1,12 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "title": "Sample flash cards",
   "settings": {
     "passingScore": 70,
     "scormVersion": "2004",
     "showFeedback": true,
-    "allowRetry": true
+    "allowRetry": true,
+    "graded": false
   },
   "design": {
     "primary": "#4f46e5",

@@ -33,7 +33,7 @@ export function IssuesMenu({ issues, onGo }: { issues: Issue[]; onGo(issue: Issu
       {open && (
         <div className="issues-pop" role="dialog" aria-label="Things to finish">
           <p className="muted">
-            These are not errors, but learners would see an empty or unscored activity.
+            These are not errors, but learners would see an empty or unfinished interaction.
           </p>
           <ul>
             {issues.map((it, i) => (

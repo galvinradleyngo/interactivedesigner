@@ -55,8 +55,9 @@ export const dragDropDef: BlockTypeDef<DdProps> = {
   label: 'Drag and drop',
   description:
     'Learners drag items onto the right zones. Good for labelling, sorting and sequencing.',
-  category: 'activity',
+  category: 'interaction',
   icon: 'dragdrop',
+  gradable: true,
   defaultSize: { w: 720, h: 420 },
   createDefault: () => ({ points: 10, bgColor: '#f8fafc', background: null, items: [], zones: [] }),
   isScored: (p) => p.items.some((i) => i.zone),

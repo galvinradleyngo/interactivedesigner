@@ -109,8 +109,6 @@ export const hotspotsPlayer: BlockPlayer<HotspotProps> = {
     function choose(id: string) {
       st.pick = id;
       ctx.setState(st);
-      const ok = !!props.hotspots.find((x) => x.id === id)?.correct;
-      ctx.report({ fraction: ok ? 1 : 0, done: true });
       reveal();
     }
 
@@ -131,7 +129,6 @@ export const hotspotsPlayer: BlockPlayer<HotspotProps> = {
     retry.addEventListener('click', () => {
       st.pick = null;
       ctx.setState(st);
-      ctx.report({ fraction: 0, done: false });
       markers.forEach((m) => {
         m.disabled = false;
         m.classList.remove('ok', 'bad');

@@ -20,7 +20,7 @@ export const timelineDef: BlockTypeDef<TimelineProps> = {
   type: 'timeline',
   label: 'Timeline',
   description: 'Events in order along a line; learners pick one to read its details.',
-  category: 'activity',
+  category: 'interaction',
   icon: 'timeline',
   defaultSize: { w: 860, h: 340 },
   createDefault: () => ({

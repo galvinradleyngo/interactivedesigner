@@ -5,6 +5,7 @@ import { newProject } from '../../schema/migrate';
 import type { ProjectDoc } from '../../schema/types';
 import { Icon } from '../components/Icon';
 import { PageThumb } from '../components/PageThumb';
+import { StorageNotice } from '../components/StorageNotice';
 import { buildScormZip, download } from '../export';
 import { packFolder } from '../folderExport';
 import { parseProjectFile, projectFileName, serializeProject } from '../project';
@@ -21,7 +22,7 @@ const activityLabels = (doc: ProjectDoc): string[] => {
   for (const p of doc.pages)
     for (const e of p.elements) {
       const d = DEFS_BY_TYPE.get(e.type);
-      if (d?.category === 'activity') set.add(d.label);
+      if (d?.category === 'interaction') set.add(d.label);
     }
   return [...set];
 };
@@ -85,7 +86,7 @@ export function Dashboard() {
   const create = () =>
     run(async () => {
       const id = store.newId();
-      await store.save(id, newProject('Untitled project'), currentFolder?.id ?? null);
+      await store.save(id, newProject('Untitled activity'), currentFolder?.id ?? null);
       nav(`/edit/${id}`);
     });
 
@@ -114,7 +115,7 @@ export function Dashboard() {
         ],
         { type: 'application/json' },
       ),
-      `interactive-designer-backup-${stamp}.idproject.json`,
+      `interactive-designer-backup-${stamp}.idactivity.json`,
     );
   };
 
@@ -148,7 +149,7 @@ export function Dashboard() {
           n++;
         }
       }
-      setInfo(`Imported ${n} ${n === 1 ? 'project' : 'projects'}.`);
+      setInfo(`Imported ${n} ${n === 1 ? 'activity' : 'activities'}.`);
     });
 
   const addFolder = () =>
@@ -175,7 +176,7 @@ export function Dashboard() {
       );
       if (r.built > 0) download(r.blob, r.fileName);
       setInfo(
-        `Downloaded ${r.built} SCORM ${r.built === 1 ? 'package' : 'packages'} from “${currentFolder.name}” in ${r.fileName}. Unzip it to get one .zip per project to upload to Canvas.` +
+        `Downloaded ${r.built} SCORM ${r.built === 1 ? 'package' : 'packages'} from “${currentFolder.name}” in ${r.fileName}. Unzip it to get one .zip per activity to upload to Canvas.` +
           (r.failed.length
             ? ` Skipped ${r.failed.length}: ${r.failed.map((f) => `${f.title} (${f.error})`).join('; ')}`
             : ''),
@@ -202,13 +203,13 @@ export function Dashboard() {
       projectFileName(`${currentFolder.name} projects`),
     );
     setInfo(
-      `Saved ${visible.length} ${visible.length === 1 ? 'project' : 'projects'} from “${currentFolder.name}” as one project file.`,
+      `Saved ${visible.length} ${visible.length === 1 ? 'activity' : 'activities'} from “${currentFolder.name}” as one activity file.`,
     );
   };
 
   const heading =
     view.kind === 'all'
-      ? 'All projects'
+      ? 'All activities'
       : view.kind === 'unfiled'
         ? 'Unfiled'
         : (currentFolder?.name ?? 'Folder');
@@ -241,7 +242,7 @@ export function Dashboard() {
         </div>
         <div className="row">
           <button type="button" onClick={() => fileInput.current?.click()}>
-            <Icon name="folder" size={16} /> Open project file
+            <Icon name="folder" size={16} /> Open activity file
           </button>
           <button type="button" onClick={backupAll} disabled={!items?.length}>
             <Icon name="download" size={16} /> Back up all
@@ -252,7 +253,7 @@ export function Dashboard() {
             accept=".json,application/json"
             multiple
             hidden
-            aria-label="Open project file"
+            aria-label="Open activity file"
             onChange={(e) => {
               void importFiles(e.target.files);
               e.target.value = '';
@@ -264,7 +265,7 @@ export function Dashboard() {
       <div className="dash-body">
         <nav className="sidebar" aria-label="Folders">
           <ul className="folderlist">
-            <li>{viewBtn('All projects', { kind: 'all' }, items?.length ?? 0, 'layers')}</li>
+            <li>{viewBtn('All activities', { kind: 'all' }, items?.length ?? 0, 'layers')}</li>
             <li>{viewBtn('Unfiled', { kind: 'unfiled' }, counts.get(null) ?? 0, 'page')}</li>
           </ul>
           <h2 className="group">Folders</h2>
@@ -319,7 +320,7 @@ export function Dashboard() {
                   className="primary"
                   disabled={!visible.length || !!busy}
                   onClick={() => void downloadFolderScorm()}
-                  title="One zip containing a SCORM package for each project in this folder"
+                  title="One zip containing a SCORM package for each activity in this folder"
                 >
                   <Icon name="download" size={16} /> Download SCORM packages
                 </button>
@@ -327,9 +328,9 @@ export function Dashboard() {
                   type="button"
                   disabled={!visible.length}
                   onClick={downloadFolderFile}
-                  title="One project file you can open here later or share with a colleague"
+                  title="One file you can open here later or share with a colleague"
                 >
-                  <Icon name="download" size={16} /> Save as project file
+                  <Icon name="download" size={16} /> Save as activity file
                 </button>
                 <button
                   type="button"
@@ -346,7 +347,7 @@ export function Dashboard() {
                   onClick={() => {
                     if (
                       window.confirm(
-                        `Delete the folder “${currentFolder.name}”? Its ${visible.length} ${visible.length === 1 ? 'project is' : 'projects are'} not deleted; they move to Unfiled.`,
+                        `Delete the folder “${currentFolder.name}”? Its ${visible.length} ${visible.length === 1 ? 'activity is' : 'activities are'} not deleted; they move to Unfiled.`,
                       )
                     ) {
                       void run(() => store.removeFolder(currentFolder.id));
@@ -361,9 +362,10 @@ export function Dashboard() {
           </div>
           <p className="lede">
             {currentFolder
-              ? 'Projects in this folder. New projects you create here are added to it.'
-              : 'Start with a blank canvas, add activities and elements, then export a SCORM package for Canvas.'}
+              ? 'Activities in this folder. New activities you create here are added to it.'
+              : 'Start with a blank canvas, add elements and interactions, then export a SCORM package for Canvas.'}
           </p>
+          <StorageNotice />
           {busy && (
             <p role="status" className="banner">
               {busy}
@@ -389,17 +391,15 @@ export function Dashboard() {
                 <span className="plus">
                   <Icon name="plus" size={28} />
                 </span>
-                <strong>New blank project</strong>
+                <strong>New activity</strong>
                 <small>
-                  {currentFolder
-                    ? `In “${currentFolder.name}”`
-                    : 'A blank canvas, ready for activities'}
+                  {currentFolder ? `In “${currentFolder.name}”` : 'A blank canvas to build on'}
                 </small>
               </button>
             </li>
             {visible.map((p) => {
               const labels = activityLabels(p.doc);
-              const ungraded = p.doc.settings.graded === false;
+              const graded = p.doc.settings.graded === true;
               return (
                 <li key={p.id}>
                   <article className="card">
@@ -421,7 +421,7 @@ export function Dashboard() {
                         {new Date(p.updatedAt).toLocaleDateString()}
                       </p>
                       <div className="chips">
-                        {ungraded && <span className="chip tag-ungraded">Ungraded</span>}
+                        {graded && <span className="chip tag-graded">Graded</span>}
                         {labels.length ? (
                           labels.map((l) => (
                             <span key={l} className="chip">
@@ -429,7 +429,7 @@ export function Dashboard() {
                             </span>
                           ))
                         ) : (
-                          <span className="chip quiet">No activities yet</span>
+                          <span className="chip quiet">No interactions yet</span>
                         )}
                       </div>
                       <label className="moveto">
@@ -457,7 +457,7 @@ export function Dashboard() {
                       <button
                         type="button"
                         onClick={() => void duplicate(p)}
-                        title="Make a copy of this project"
+                        title="Make a copy of this activity"
                       >
                         <Icon name="copy" size={15} /> Duplicate
                       </button>
@@ -477,8 +477,8 @@ export function Dashboard() {
                       <button
                         type="button"
                         className="iconbtn"
-                        aria-label={`Save project file for ${p.title}`}
-                        title="Save as project file"
+                        aria-label={`Save activity file for ${p.title}`}
+                        title="Save as activity file"
                         onClick={() => exportOne(p)}
                       >
                         <Icon name="download" size={15} />
@@ -504,12 +504,12 @@ export function Dashboard() {
           {items === null && <p>Loading…</p>}
           {items !== null && visible.length === 0 && view.kind !== 'all' && (
             <p className="muted">
-              Nothing here yet. Create a project, or move one in with its Folder menu.
+              Nothing here yet. Create an activity, or move one in with its Folder menu.
             </p>
           )}
 
           <p className="footnote" role="note">
-            Projects are saved in this browser on this device and work offline. Use{' '}
+            Activities are saved in this browser on this device and work offline. Use{' '}
             <strong>Back up all</strong> or a folder’s download buttons to keep copies or share
             work.
             {!isSingleFile && (

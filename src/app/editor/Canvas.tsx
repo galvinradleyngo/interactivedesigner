@@ -178,7 +178,7 @@ export function Canvas(p: Props) {
           {page.elements.length === 0 && (
             <div className="ed-empty">
               <strong>Blank canvas</strong>
-              <span>Add text, pictures or an activity from the panel on the left.</span>
+              <span>Add text, pictures or an interaction from the panel on the left.</span>
             </div>
           )}
           {guides?.x.map((x) => (

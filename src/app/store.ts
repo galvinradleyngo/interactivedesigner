@@ -29,6 +29,22 @@ const PROJECTS = 'activities'; // original store name, kept so existing data sta
 const FOLDERS = 'folders';
 
 let dbPromise: Promise<IDBDatabase> | null = null;
+
+type BlockedListener = (blocked: boolean) => void;
+const blockedListeners = new Set<BlockedListener>();
+
+/**
+ * Called with true while the database upgrade is waiting for another open tab (an older version
+ * of this app) to let go, and false once storage is available. Returns an unsubscribe function.
+ */
+export function onStorageBlocked(cb: BlockedListener): () => void {
+  blockedListeners.add(cb);
+  return () => {
+    blockedListeners.delete(cb);
+  };
+}
+const notify = (blocked: boolean) => blockedListeners.forEach((l) => l(blocked));
+
 function open(): Promise<IDBDatabase> {
   dbPromise ??= new Promise((resolve, reject) => {
     const req = indexedDB.open(DB_NAME, 2);
@@ -38,8 +54,23 @@ function open(): Promise<IDBDatabase> {
         db.createObjectStore(PROJECTS, { keyPath: 'id' });
       if (!db.objectStoreNames.contains(FOLDERS)) db.createObjectStore(FOLDERS, { keyPath: 'id' });
     };
-    req.onsuccess = () => resolve(req.result);
-    req.onerror = () => reject(req.error ?? new Error('Could not open browser storage'));
+    // Another tab still holds an older connection open: the upgrade waits until it closes.
+    req.onblocked = () => notify(true);
+    req.onsuccess = () => {
+      const db = req.result;
+      // If a newer version of the app needs to upgrade, step aside instead of blocking it.
+      db.onversionchange = () => {
+        db.close();
+        dbPromise = null;
+      };
+      notify(false);
+      resolve(db);
+    };
+    req.onerror = () => {
+      dbPromise = null; // allow a retry
+      notify(false);
+      reject(req.error ?? new Error('Could not open browser storage'));
+    };
   });
   return dbPromise;
 }
@@ -127,7 +158,7 @@ export const store = {
     const copyId = newId();
     await tx([PROJECTS], 'readwrite', async (s) => {
       const row = await req<Row | undefined>(s(PROJECTS).get(id));
-      if (!row) throw new Error('That project no longer exists');
+      if (!row) throw new Error('That activity no longer exists');
       const doc = structuredClone(row.doc);
       doc.title = `${row.doc.title} (copy)`;
       await req(
