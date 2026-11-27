@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import {
   STAGE_W,
   stageHeight,
@@ -30,6 +30,7 @@ const isTyping = (t: EventTarget | null): boolean => {
 
 export function Editor() {
   const { id = '' } = useParams();
+  const nav = useNavigate();
   const h = useHistory<ProjectDoc>();
   const doc = h.present;
   const docRef = useRef<ProjectDoc | null>(null);
@@ -244,6 +245,16 @@ export function Editor() {
     [change],
   );
 
+  const duplicateProject = async () => {
+    try {
+      await save();
+      const copyId = await store.duplicate(id);
+      nav(`/edit/${copyId}`);
+    } catch (e) {
+      setMsg((e as Error).message);
+    }
+  };
+
   const exportZip = async () => {
     if (!doc) return;
     setBusy(true);
@@ -317,6 +328,13 @@ export function Editor() {
             <Icon name="redo" />
           </button>
         </div>
+        <button
+          type="button"
+          onClick={() => void duplicateProject()}
+          title="Make a copy of this project and open it"
+        >
+          <Icon name="copy" size={16} /> Duplicate
+        </button>
         <div className="row zoom" role="group" aria-label="Zoom">
           <button
             type="button"
