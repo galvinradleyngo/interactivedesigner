@@ -14,7 +14,7 @@ export interface Issue {
 /** Things an author probably wants to finish before previewing or exporting. */
 export function checkProject(doc: ProjectDoc): Issue[] {
   const out: Issue[] = [];
-  const graded = doc.settings.graded !== false;
+  const graded = doc.settings.graded === true;
   const H = stageHeight(doc.design);
   for (const page of doc.pages) {
     for (const el of page.elements) {
@@ -40,7 +40,7 @@ export function checkProject(doc: ProjectDoc): Issue[] {
           if (arr('zones').length === 0) add('has no drop zones');
           if (arr('items').length === 0) add('has no items to drag');
           if (graded && arr('items').length > 0 && !arr('items').some((i) => i.zone))
-            add('has no item with a correct zone, so it is not scored');
+            add('has no item with a correct zone, so it is not graded');
           break;
         case 'flashcards':
           if (arr('cards').length === 0) add('has no cards');

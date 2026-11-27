@@ -13,7 +13,7 @@ export const imageCompareDef: BlockTypeDef<CompareProps> = {
   type: 'imageCompare',
   label: 'Image comparison',
   description: 'Two images with a slider to reveal one over the other (before/after).',
-  category: 'activity',
+  category: 'interaction',
   icon: 'compare',
   defaultSize: { w: 640, h: 400 },
   createDefault: () => ({

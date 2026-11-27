@@ -50,7 +50,7 @@ export function parseProjectFile(text: string): {
   ) {
     list = [obj];
   }
-  if (list.length === 0) throw new Error('No projects found in that file');
+  if (list.length === 0) throw new Error('No activities found in that file');
   return {
     projects: list.map((a) => migrate(a)),
     folders: list.map((_, i) =>
@@ -63,4 +63,4 @@ export function parseProjectFile(text: string): {
 
 export const parseProject = (text: string): ProjectDoc[] => parseProjectFile(text).projects;
 
-export const projectFileName = (title: string): string => safeFileName(title, 'idproject.json');
+export const projectFileName = (title: string): string => safeFileName(title, 'idactivity.json');

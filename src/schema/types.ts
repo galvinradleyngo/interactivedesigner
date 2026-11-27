@@ -1,6 +1,9 @@
 /** Shared, framework-free types. Imported by both the authoring app and the player. */
 
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
+
+/** Interactions that can be graded. Must match the `gradable` flag in plugins/defs (tested). */
+export const GRADABLE_TYPES: readonly string[] = ['multipleChoice', 'dragDrop'];
 
 /** Logical stage size. Element rects are in these units and scale to any screen. */
 export const STAGE_W = 960;
@@ -28,7 +31,10 @@ export interface ProjectSettings {
   scormVersion: ScormVersion;
   showFeedback: boolean;
   allowRetry: boolean;
-  /** false = ungraded: no scores, points or pass/fail anywhere, and no score is reported to the LMS. */
+  /**
+   * true = graded: gradable interactions count toward a score that is reported to the LMS.
+   * false (the default) = no scores, points or pass/fail anywhere; only completion is reported.
+   */
   graded: boolean;
 }
 
@@ -95,7 +101,7 @@ export const DEFAULT_SETTINGS: ProjectSettings = {
   scormVersion: '2004',
   showFeedback: true,
   allowRetry: true,
-  graded: true,
+  graded: false,
 };
 
 export const DEFAULT_DESIGN: Design = {

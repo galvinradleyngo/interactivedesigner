@@ -43,7 +43,7 @@ describe('checkProject', () => {
     const items = [{ id: 'i', label: 'a', image: null, x: 0, y: 0, w: 10, h: 10, zone: null }];
     const zones = [{ id: 'z', label: 'z', x: 0, y: 0, w: 10, h: 10, capacity: 0 }];
     expect(msgs(withBlock('dragDrop', { items, zones }))).toEqual([
-      'Drag and drop has no item with a correct zone, so it is not scored',
+      'Drag and drop has no item with a correct zone, so it is not graded',
     ]);
     expect(msgs(withBlock('dragDrop', { items, zones }, false))).toEqual([]);
   });

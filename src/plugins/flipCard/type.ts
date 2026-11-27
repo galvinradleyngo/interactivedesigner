@@ -37,7 +37,7 @@ export const flipCardDef: BlockTypeDef<FlipCardProps> = {
   label: 'Flip card',
   description:
     'A shape with text and/or a picture that turns over when clicked to reveal the back.',
-  category: 'activity',
+  category: 'interaction',
   icon: 'flip',
   defaultSize: { w: 260, h: 180 },
   createDefault: () => ({

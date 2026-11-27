@@ -1,47 +1,47 @@
 # Interactive Designer
 
-Author interactive learning activities in the browser and export them as **SCORM packages** (SCORM 2004 4th Edition or 1.2) to upload to Canvas as graded assignments.
+Build interactive learning activities in the browser and export them as **SCORM packages** (SCORM 2004 4th Edition or 1.2) to upload to Canvas, as a page, an ungraded assignment or a graded assignment.
 
-It is **local-first and works fully offline**: no accounts, no server, no database. Your work is saved in your browser, you can save and open project files, and SCORM export happens in the browser.
+It is **local-first and works fully offline**: no accounts, no server, no database. Your work is saved in your browser, you can save and open activity files, and SCORM export happens in the browser.
 
 - Hosted app: https://galvinradleyngo.github.io/interactivedesigner/
 - Single-file offline version: https://galvinradleyngo.github.io/interactivedesigner/interactive-designer-offline.html
 
 ## What works today
 
-A project is a deck of pages. Every project starts with one blank canvas; you add elements and activities to it and arrange them freely.
+You make **activities**. An activity is one or more pages; every new activity starts as one blank canvas that you fill with elements and interactions and arrange freely.
 
-- **Elements:** text (type directly on the canvas), image, shape, button (go to next, previous or a specific page).
-- **Activities:** multiple choice, hotspots (explore or "find the spot" quiz), drag and drop (labelling, sorting, sequencing), flash cards, flip card (a shape with text and/or a picture that turns over when clicked), timeline (horizontal or vertical), image comparison slider.
-- **Graded or ungraded:** tick **Ungraded** in Project settings and the whole project shows no scores, points, percentages or pass/fail, and sends no score to the LMS (the package only reports completion). You can also mark a single activity as not counting toward the score.
-- **Scoring (graded):** each scored activity has a points value; the project score is the total of all graded activities, compared against the passing score. Hotspots in explore mode, flash cards, flip cards, timelines and the comparison slider are not scored.
+- **Elements:** text (type directly on the canvas), image, shape, button (go to the next page, the previous page or a specific page).
+- **Interactions:** multiple choice, drag and drop (labelling, sorting, sequencing), hotspots (click points on an image to reveal text or pictures, or a "find the spot" self-check), flash cards, flip card (a shape with text and/or a picture that turns over when clicked), timeline (horizontal or vertical), image comparison slider.
+- **One page = no Back/Next.** Navigation buttons only appear when an activity has more than one page.
+- **Grading is off by default.** The switch in the top bar (and the **Grading** tab) turns it on. When it is off, learners see no scores, points, percentages or pass/fail, and only completion is sent to the LMS. When it is on, **only multiple choice and drag and drop can be graded** (flip cards, hotspots, timelines, flash cards and the comparison slider are for learning, not marks). In the Grading tab you pick which of those count, give each its points, and set the passing score; the learner's score is the share of the total points they earn.
 - **Page shape:** widescreen 16:9 (default), 4:3, square, portrait tablet or portrait phone, so you can design for how learners will hold their device.
-- **Blends into the course page:** the area around the page is transparent by default; Project → Look has an optional "Background around the page" colour.
 - **Preview** at Desktop, Tablet or Phone size, in portrait or landscape, before you export.
-- **SCORM export** for 2004 4th Edition (default) and 1.2: score (raw/min/max, plus scaled for 2004), completion, pass/fail, resume via `suspend_data`. Exported packages make no network requests.
-- **Folders:** organize projects into folders from the dashboard, move projects between them, **duplicate** a project, and download everything in a folder in one go (as a zip of SCORM packages, or as one project file).
-- Project files (`.idproject.json`) with images embedded, for backups and for sharing work between designers (they remember which folder a project was in). Old single-activity files and saved activities open automatically (they become a one-page project).
+- **Blends into the course page:** the area around the page is transparent by default; Settings has an optional "Background around the page" colour.
+- **SCORM export** for 2004 4th Edition (default) and 1.2: score (raw/min/max, plus scaled for 2004) when graded, completion, pass/fail when graded, resume via `suspend_data`. Exported packages make no network requests.
+- **Folders:** organize activities into folders from the dashboard, move activities between them, **duplicate** an activity, and download everything in a folder in one go (as a zip of SCORM packages, or as one activity file).
+- Activity files (`.idactivity.json`) with images embedded, for backups and for sharing work between designers (they remember which folder an activity was in). Older files and saved work open automatically.
 
-Planned next: True/False, Fill in the blanks, Interactive Video (YouTube), Branching, Game map, Crossword, Word search, Memory game, audio, multi-select and rotation.
+Planned next: True/False, Fill in the blanks (both gradable), Interactive Video (YouTube), Branching, Game map, Crossword, Word search, Memory game, audio, multi-select and rotation.
 
 ## Using the editor
 
-1. **New blank project** on the dashboard opens a blank canvas. If you have a folder open, the new project goes into it.
-2. **Add** (left panel): click an element or activity to place it on the page. **Pages** adds, renames, reorders and duplicates pages. **Layers** shows the stacking order and lets you hide or lock things.
+1. **New activity** on the dashboard opens a blank canvas. If you have a folder open, the new activity goes into it.
+2. **Add** (left panel): click an element or an interaction to place it on the page. **Pages** adds, renames, reorders and duplicates pages. **Layers** shows the stacking order and lets you hide or lock things.
 3. **Move and resize** by dragging; handles resize (hold Shift on a corner to keep proportions). Edges and centres snap to the page and to other elements (hold Alt to bypass, or switch Snap off). Arrow keys nudge by 1 (Shift: 10).
-4. **Edit text** by double-clicking it. **Edit an activity on the canvas** by double-clicking it (or **Edit on canvas** in the panel):
+4. **Edit text** by double-clicking it. **Edit an interaction on the canvas** by double-clicking it (or **Edit on canvas** in the panel):
    - Hotspots: double-click the image to add a hotspot, drag markers to move them.
    - Drag and drop: drag items and zones into place and use the handles to resize (double-click adds an item; Shift+double-click adds a zone). Set which zone each item belongs in from the panel.
    - Flip card: tick **Show the back on the canvas** to design the back side. Copy and paste (or Duplicate) a card to make a grid of them.
-5. The right panel has **Element** (position, size, order, lock, activity settings and content), **Page** (name, background) and **Project** (title, graded/ungraded, passing score, SCORM version, feedback, retry, page shape, colours, font).
-6. **to finish** (top bar) lists activities that are empty or incomplete, such as a hotspots block with no image, and jumps to each one. Previewing a block that is not set up explains what is missing instead of showing a blank slide.
-7. **Preview** plays the project as a learner would, at the device size you choose. **Duplicate** copies the project. **Export SCORM** downloads the zip.
+5. The right panel has **Element** (position, size, order, lock and the interaction's content), **Page** (name, background), **Grading** (the graded switch, passing score and each gradable interaction's points) and **Settings** (title, SCORM version, feedback, retry, page shape, colours, font).
+6. **to finish** (top bar) lists interactions that are empty or incomplete, such as a hotspots block with no image, and jumps to each one. Previewing one that is not set up explains what is missing instead of showing a blank slide.
+7. **Preview** plays the activity as a learner would, at the device size you choose. **Duplicate** copies the activity. **Export SCORM** downloads the zip.
 
 Shortcuts: Ctrl/Cmd+Z undo, Ctrl/Cmd+Shift+Z or Ctrl+Y redo, Ctrl/Cmd+C/V copy and paste, Ctrl/Cmd+D duplicate, Delete removes, Esc deselects or leaves canvas editing, Ctrl/Cmd+S saves now.
 
 ### Phones and tablets
 
-The page is a fixed shape that scales to fit the screen, and the player always fits the whole page on screen. A widescreen page on an upright phone is small (the player suggests turning the phone sideways), so for phone learners choose **Portrait phone 9:16** under Project → Page shape and use the Phone preview to check. Changing the shape keeps each element's position, so resize or move things afterwards (the **to finish** list flags anything left outside the page). Controls enlarge to touch-friendly sizes on small screens, and drag-and-drop items can be picked up and dropped with a tap or the keyboard (Enter or Space).
+The page is a fixed shape that scales to fit the screen, and the player always fits the whole page on screen. A widescreen page on an upright phone is small (the player suggests turning the phone sideways), so for phone learners choose **Portrait phone 9:16** under Settings → Page shape and use the Phone preview to check. Changing the shape keeps each element's position, so resize or move things afterwards (the **to finish** list flags anything left outside the page). Controls enlarge to touch-friendly sizes on small screens, and drag-and-drop items can be picked up and dropped with a tap or the keyboard (Enter or Space).
 
 The editor itself is designed for a laptop or desktop, and works on a tablet held sideways.
 
@@ -59,9 +59,9 @@ Activities are saved automatically in **this browser, on this device** (IndexedD
 
 - Each way of opening the app has its **own** storage. The hosted site, the installed app and the single HTML file do not share activities, and some browsers store file-based data separately per file location. Moving or renaming the HTML file can look like "my activities are gone".
 - Browsers can clear site data (clearing history, private windows, low disk space).
-- So **back up regularly**: **Back up all** on the dashboard downloads every project in one file; each project's download button saves just that one, and a folder's buttons download everything in it. **Open project file…** loads either kind (including from another computer or another way of opening the app).
-- To hand an activity to a colleague, send them its project file.
-- If the dashboard stays on "Loading…" and shows "Waiting for another tab", an older copy of the app is open in another tab or window and is holding the saved projects while the app upgrades its storage. Close the other tabs (including any installed app window) and the page continues by itself. Nothing is lost.
+- So **back up regularly**: **Back up all** on the dashboard downloads every activity in one file; each activity's download button saves just that one, and a folder's buttons download everything in it. **Open activity file** loads either kind (including from another computer or another way of opening the app).
+- To hand an activity to a colleague, send them its activity file.
+- If the dashboard stays on "Loading…" and shows "Waiting for another tab", an older copy of the app is open in another tab or window and is holding the saved activities while the app upgrades its storage. Close the other tabs (including any installed app window) and the page continues by itself. Nothing is lost.
 
 ## Publishing the hosted version (GitHub Pages)
 
@@ -93,13 +93,13 @@ If Canvas doesn't offer SCORM at your institution, ask your Canvas administrator
 ## How it's built
 
 - `src/schema` versioned content schema (`schemaVersion`) with `migrate()`, plus the HTML sanitizer.
-- `src/plugins/<type>` one folder per block type (elements and activities): definition and scoring (`type.ts`), player renderer (`player.ts`), inspector panel (`Panel.tsx`) and an optional on-canvas editor (`Overlay.tsx`). To add a type, add a folder and register it in `plugins/defs.ts`, `player/registry.ts` and `app/registry.ts`.
+- `src/plugins/<type>` one folder per block type (elements and interactions): definition and scoring (`type.ts`), player renderer (`player.ts`), inspector panel (`Panel.tsx`) and an optional on-canvas editor (`Overlay.tsx`). To add a type, add a folder and register it in `plugins/defs.ts`, `player/registry.ts` and `app/registry.ts`.
 - `src/player` framework-free player, built by `vite.player.config.ts` into one `player.js` and one `player.css`. The same bundle runs the in-app preview and the exported package, and it is embedded in the app so nothing is fetched at export time.
 - `src/scorm` API discovery, SCORM 1.2 and 2004 adapters, reporter, `suspend_data`, manifest generation.
-- `src/app` the authoring app (HashRouter, IndexedDB store, project files, export with JSZip). `src/app/editor` holds the canvas, inspector, side panels, undo/redo history and the pure editing operations (tested).
+- `src/app` the authoring app (HashRouter, IndexedDB store, activity files, export with JSZip). `src/app/editor` holds the canvas, inspector, side panels, undo/redo history and the pure editing operations (tested).
 - `scripts/make-sw.mjs` generates the service worker that precaches the app. `vite.single.config.ts` builds the single-file version.
-- `examples/` a sample project per activity type plus a multi-page lesson using all of them (open them with **Open project file**).
+- `examples/` a sample activity per interaction type plus a multi-page lesson using all of them (open them with **Open activity file**).
 
 ### Package layout
 
-`imsmanifest.xml`, `index.html`, `player.js`, `player.css`, `content.json`, `media/…`. The project data is also embedded in `index.html`, so it loads even from `file://`. Only images that are actually used are included.
+`imsmanifest.xml`, `index.html`, `player.js`, `player.css`, `content.json`, `media/…`. The activity data is also embedded in `index.html`, so it loads even from `file://`. Only images that are actually used are included.

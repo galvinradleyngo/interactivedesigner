@@ -21,7 +21,7 @@ export const flashcardsDef: BlockTypeDef<FlashProps> = {
   type: 'flashcards',
   label: 'Flash cards',
   description: 'Two-sided cards for studying terms, translations and pairs.',
-  category: 'activity',
+  category: 'interaction',
   icon: 'cards',
   defaultSize: { w: 480, h: 320 },
   createDefault: () => ({

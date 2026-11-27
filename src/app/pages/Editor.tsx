@@ -12,10 +12,11 @@ import { Icon } from '../components/Icon';
 import { PreviewModal } from '../components/Preview';
 import { StorageNotice } from '../components/StorageNotice';
 import { Canvas } from '../editor/Canvas';
+import { DEFS_BY_TYPE } from '../../plugins/defs';
 import { checkProject, type Issue } from '../editor/checks';
 import { IssuesMenu } from '../editor/IssuesMenu';
 import { useHistory } from '../editor/history';
-import { Inspector } from '../editor/Inspector';
+import { Inspector, type InspectorTab } from '../editor/Inspector';
 import { LeftPanel } from '../editor/LeftPanel';
 import * as model from '../editor/model';
 import { buildScormZip, download } from '../export';
@@ -44,6 +45,7 @@ export function Editor() {
   const [editingBlock, setEditingBlock] = useState<string | null>(null);
   const [editingText, setEditingText] = useState<string | null>(null);
   const [peek, setPeek] = useState<Record<string, boolean>>({});
+  const [openTab, setOpenTab] = useState<{ tab: InspectorTab; n: number } | undefined>();
   const [sub, setSub] = useState<string | null>(null);
   const [zoom, setZoom] = useState(1);
   const [snapOn, setSnapOn] = useState(true);
@@ -81,6 +83,7 @@ export function Editor() {
   const goIssue = (it: Issue) => {
     setPageId(it.pageId);
     setSelectedId(it.elementId);
+    setOpenTab({ tab: 'element', n: Date.now() });
   };
 
   const page: Page | undefined = doc?.pages.find((p) => p.id === pageId) ?? doc?.pages[0];
@@ -246,6 +249,22 @@ export function Editor() {
     [change],
   );
 
+  const setGraded = (graded: boolean) => {
+    if (!doc) return;
+    change((d) => ({ ...d, settings: { ...d.settings, graded } }));
+    if (graded) {
+      setOpenTab({ tab: 'grading', n: Date.now() });
+      const anyGradable = doc.pages.some((pg) =>
+        pg.elements.some((e) => DEFS_BY_TYPE.get(e.type)?.gradable),
+      );
+      setMsg(
+        anyGradable
+          ? 'Graded is on. Choose which interactions count and their points in the Grading tab.'
+          : 'Graded is on, but there is nothing to grade yet. Add a Multiple choice or Drag and drop interaction.',
+      );
+    }
+  };
+
   const duplicateProject = async () => {
     try {
       await save();
@@ -265,7 +284,7 @@ export function Editor() {
       const { blob, fileName } = await buildScormZip(docRef.current ?? doc);
       download(blob, fileName);
       setMsg(
-        `Exported ${fileName} (SCORM ${doc.settings.scormVersion === '2004' ? '2004 4th Edition' : '1.2'}${doc.settings.graded === false ? ', ungraded' : ''}).${issues.length ? ` Note: ${issues.length} unfinished ${issues.length === 1 ? 'item' : 'items'}, see “to finish” in the top bar.` : ''}`,
+        `Exported ${fileName} (SCORM ${doc.settings.scormVersion === '2004' ? '2004 4th Edition' : '1.2'}${doc.settings.graded ? ', graded' : ', not graded'}).${issues.length ? ` Note: ${issues.length} unfinished ${issues.length === 1 ? 'item' : 'items'}, see “to finish” in the top bar.` : ''}`,
       );
     } catch (e) {
       setMsg((e as Error).message);
@@ -277,7 +296,7 @@ export function Editor() {
   if (missing)
     return (
       <p className="page">
-        Project not found. <Link to="/">Back to projects</Link>
+        Activity not found. <Link to="/">Back to activities</Link>
       </p>
     );
   if (loadError) return <p className="page error">{loadError}</p>;
@@ -300,12 +319,17 @@ export function Editor() {
   return (
     <div className="editor">
       <header className="topbar">
-        <Link to="/" className="iconbtn big" aria-label="Back to projects" title="Back to projects">
+        <Link
+          to="/"
+          className="iconbtn big"
+          aria-label="Back to activities"
+          title="Back to activities"
+        >
           <Icon name="back" />
         </Link>
         <input
           className="titleinput"
-          aria-label="Project title"
+          aria-label="Activity title"
           value={doc.title}
           onChange={(e) => change((d) => ({ ...d, title: e.target.value }), 'title')}
         />
@@ -313,6 +337,30 @@ export function Editor() {
           {saveLabel}
         </span>
         <div className="spacer" />
+        <div className="gradecontrol">
+          <label
+            className={`gradeswitch ${doc.settings.graded ? 'on' : ''}`}
+            title="Graded activities send a score to the LMS gradebook. Not graded: only completion is reported."
+          >
+            <input
+              type="checkbox"
+              role="switch"
+              checked={doc.settings.graded}
+              onChange={(e) => setGraded(e.target.checked)}
+            />
+            <span className="switch-track" aria-hidden="true">
+              <span className="switch-knob" />
+            </span>
+            <span className="gradelabel">{doc.settings.graded ? 'Graded' : 'Not graded'}</span>
+          </label>
+          <button
+            type="button"
+            className="link"
+            onClick={() => setOpenTab({ tab: 'grading', n: Date.now() })}
+          >
+            Grading
+          </button>
+        </div>
         <div className="row" role="group" aria-label="History">
           <button
             type="button"
@@ -338,7 +386,7 @@ export function Editor() {
         <button
           type="button"
           onClick={() => void duplicateProject()}
-          title="Make a copy of this project and open it"
+          title="Make a copy of this activity and open it"
         >
           <Icon name="copy" size={16} /> Duplicate
         </button>
@@ -478,6 +526,12 @@ export function Editor() {
         </main>
 
         <Inspector
+          openTab={openTab}
+          onGo={(pageId, elId) => {
+            setPageId(pageId);
+            setSelectedId(elId);
+            setOpenTab({ tab: 'element', n: Date.now() });
+          }}
           doc={doc}
           page={page}
           el={selected}

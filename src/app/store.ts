@@ -158,7 +158,7 @@ export const store = {
     const copyId = newId();
     await tx([PROJECTS], 'readwrite', async (s) => {
       const row = await req<Row | undefined>(s(PROJECTS).get(id));
-      if (!row) throw new Error('That project no longer exists');
+      if (!row) throw new Error('That activity no longer exists');
       const doc = structuredClone(row.doc);
       doc.title = `${row.doc.title} (copy)`;
       await req(

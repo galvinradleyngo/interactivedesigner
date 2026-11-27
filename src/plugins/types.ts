@@ -10,12 +10,14 @@ export interface BlockTypeDef<P = Record<string, unknown>> {
   type: string;
   label: string;
   description: string;
-  category: 'basic' | 'activity';
+  category: 'basic' | 'interaction';
   /** Name of the icon in the app's icon set. */
   icon: string;
+  /** Can this interaction be graded (counted toward a score)? Only a few make sense to grade. */
+  gradable?: boolean;
   defaultSize: { w: number; h: number };
   createDefault(): P;
-  /** Whether this block currently counts toward the score. Defaults to false. */
+  /** For gradable interactions: whether it currently has anything to grade (e.g. correct answers set). */
   isScored?(props: P): boolean;
   /** Pure scoring: fraction 0..1 for the learner's recorded state. */
   fraction?(props: P, state: unknown): number;
@@ -32,7 +34,7 @@ export interface BlockContext<P = Record<string, unknown>> {
   editing: boolean;
   /** Show author hints (e.g. "add an image") for unfinished blocks: editor and preview only. */
   hints: boolean;
-  /** False when the project or this activity is ungraded: show no scores, points or percentages. */
+  /** False unless the activity is graded and this interaction counts: show no scores, points or percentages otherwise. */
   graded: boolean;
   resolveMedia(ref: unknown): string;
   /** Previously saved state for this block (from suspend_data). */
@@ -55,7 +57,7 @@ export function blockPoints(props: Record<string, unknown>): number {
   return Number.isFinite(p) && p >= 0 ? p : DEFAULT_POINTS;
 }
 
-/** Whether a block's result counts toward a score (project and activity both graded). */
+/** Whether an interaction's result counts toward a score (activity graded, and not switched off for this one). */
 export function isGraded(settings: { graded?: boolean }, props: Record<string, unknown>): boolean {
-  return settings.graded !== false && props.graded !== false;
+  return settings.graded === true && props.graded !== false;
 }

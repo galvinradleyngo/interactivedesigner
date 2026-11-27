@@ -9,7 +9,7 @@ export function StorageNotice() {
   return (
     <p role="alert" className="banner error">
       Waiting for another tab. An older copy of Interactive Designer is open in another tab or
-      window and is holding your saved projects. Close that tab (or reload it), and this page will
+      window and is holding your saved activities. Close that tab (or reload it), and this page will
       continue automatically. Nothing has been lost.
     </p>
   );

@@ -13,9 +13,8 @@ export interface Hotspot {
 }
 
 export interface HotspotProps {
-  points: number;
   image: string | null;
-  /** explore: click to reveal content (unscored). find: click the right spot (scored). */
+  /** explore: click to reveal content. find: a self-check, click the right spot (never graded). */
   mode: 'explore' | 'find';
   prompt: string;
   markerColor: string;
@@ -31,21 +30,15 @@ export const hotspotsDef: BlockTypeDef<HotspotProps> = {
   type: 'hotspots',
   label: 'Hotspots',
   description:
-    'Clickable points on an image that reveal text or pictures, or a "find the spot" quiz.',
-  category: 'activity',
+    'Clickable points on an image that reveal text or pictures, or a "find the spot" self-check.',
+  category: 'interaction',
   icon: 'hotspot',
   defaultSize: { w: 640, h: 420 },
   createDefault: () => ({
-    points: 10,
     image: null,
     mode: 'explore',
     prompt: 'Click the correct spot.',
     markerColor: '',
     hotspots: [],
   }),
-  isScored: (p) => p.mode === 'find',
-  fraction: (p, state) => {
-    const pick = (state as HotspotState | null)?.pick;
-    return pick && p.hotspots.find((h) => h.id === pick)?.correct ? 1 : 0;
-  },
 };

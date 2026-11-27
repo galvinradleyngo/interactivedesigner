@@ -31,7 +31,7 @@ export function LeftPanel(p: Props) {
     { id: 'layers', label: 'Layers', icon: 'layers' },
   ];
   const basic = BLOCK_DEFS.filter((d) => d.category === 'basic');
-  const acts = BLOCK_DEFS.filter((d) => d.category === 'activity');
+  const acts = BLOCK_DEFS.filter((d) => d.category === 'interaction');
 
   return (
     <aside className="left" aria-label="Add, pages and layers">
@@ -67,7 +67,7 @@ export function LeftPanel(p: Props) {
               </button>
             ))}
           </div>
-          <h3 className="group">Activities</h3>
+          <h3 className="group">Interactions</h3>
           <ul className="actlist">
             {acts.map((d) => (
               <li key={d.type}>

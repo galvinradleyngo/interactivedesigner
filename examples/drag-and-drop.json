@@ -1,11 +1,12 @@
 {
-  "schemaVersion": 2,
+  "schemaVersion": 3,
   "title": "Sample drag and drop",
   "settings": {
     "passingScore": 70,
     "scormVersion": "2004",
     "showFeedback": true,
-    "allowRetry": true
+    "allowRetry": true,
+    "graded": true
   },
   "design": {
     "primary": "#4f46e5",

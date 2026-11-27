@@ -20,8 +20,8 @@ describe('project files', () => {
   });
   it('rejects garbage and empty files', () => {
     expect(() => parseProject('nope')).toThrow(/valid JSON/);
-    expect(() => parseProject('{"hello":1}')).toThrow(/No projects/);
-    expect(() => parseProject(serializeProject([]))).toThrow(/No projects/);
+    expect(() => parseProject('{"hello":1}')).toThrow(/No activities/);
+    expect(() => parseProject(serializeProject([]))).toThrow(/No activities/);
   });
   it('opens v1 backups (activities[] with a single activity each)', () => {
     const v1 = {
