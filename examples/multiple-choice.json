@@ -1,0 +1,83 @@
+{
+  "schemaVersion": 1,
+  "type": "multipleChoice",
+  "title": "Sample multiple choice",
+  "settings": {
+    "passingScore": 70,
+    "scormVersion": "2004",
+    "showFeedback": true,
+    "allowRetry": true
+  },
+  "design": {
+    "primary": "#1d4ed8",
+    "background": "#eef2ff",
+    "text": "#1f2937",
+    "font": "system",
+    "radius": 10,
+    "backgroundImage": null
+  },
+  "content": {
+    "intro": "<p>Answer the questions below.</p>",
+    "questions": [
+      {
+        "id": "q1",
+        "text": "<p>Which planet is closest to the Sun?</p>",
+        "multi": false,
+        "shuffle": true,
+        "options": [
+          {
+            "id": "a",
+            "text": "Mercury",
+            "correct": true,
+            "feedback": "Correct - Mercury orbits closest."
+          },
+          {
+            "id": "b",
+            "text": "Venus",
+            "correct": false,
+            "feedback": "Venus is second from the Sun."
+          },
+          {
+            "id": "c",
+            "text": "Mars",
+            "correct": false,
+            "feedback": ""
+          }
+        ]
+      },
+      {
+        "id": "q2",
+        "text": "<p>Select <strong>all</strong> prime numbers.</p>",
+        "multi": true,
+        "shuffle": false,
+        "options": [
+          {
+            "id": "a",
+            "text": "2",
+            "correct": true,
+            "feedback": ""
+          },
+          {
+            "id": "b",
+            "text": "3",
+            "correct": true,
+            "feedback": ""
+          },
+          {
+            "id": "c",
+            "text": "4",
+            "correct": false,
+            "feedback": "4 = 2 x 2"
+          },
+          {
+            "id": "d",
+            "text": "9",
+            "correct": false,
+            "feedback": ""
+          }
+        ]
+      }
+    ]
+  },
+  "media": []
+}
